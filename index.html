@@ -695,8 +695,9 @@
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
             const [time, setTime] = useState(new Date());
 
+            // 修改：升級到 v5 以確保新 Logo 生效
             useEffect(() => {
-                const savedData = localStorage.getItem('kpi_dashboard_data_v4');
+                const savedData = localStorage.getItem('kpi_dashboard_data_v5');
                 if (savedData) {
                     try {
                         const parsedData = JSON.parse(savedData);
@@ -710,10 +711,11 @@
                 }
             }, []);
 
+            // 修改：儲存到 v5
             const handleSaveData = (newData) => {
                 if (!newData.dateRange) newData.dateRange = calculateAutoDateRange();
                 setData(newData);
-                localStorage.setItem('kpi_dashboard_data_v4', JSON.stringify(newData));
+                localStorage.setItem('kpi_dashboard_data_v5', JSON.stringify(newData));
                 setIsSettingsOpen(false);
             };
 
