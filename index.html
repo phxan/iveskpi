@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客服部 KPI 儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0b1121; /* 非常深的藍黑色 */
+            color: #ffffff;
+            overflow: hidden; /* 防止電視上出現滾動條 */
+        }
+
+        /* 玻璃擬態效果 */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* 霓虹光暈動畫 */
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.4); }
+        }
+
+        .glow-effect {
+            animation: glow 3s infinite;
+        }
+
+        /* 隱藏滾動條但保留功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 設定按鈕樣式 */
+        .settings-btn {
+            opacity: 0.5;
+            transition: opacity 0.3s;
+            background-color: rgba(30, 41, 59, 0.8);
+        }
+        .settings-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        /* Modal 動畫 */
+        .modal-enter {
+            animation: modal-in 0.3s ease-out forwards;
+        }
+        @keyframes modal-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 跑馬燈動畫 */
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 10s linear infinite;
+        }
+        /* 當滑鼠懸停時暫停跑馬燈，方便閱讀 */
+        .marquee-container:hover .animate-marquee {
+            animation-play-state: paused;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- 內建圖標組件 ---
+        const IconBase = ({ size = 24, className = "", children, onClick }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+                onClick={onClick}
+                style={{ cursor: onClick ? 'pointer' : 'default' }}
+            >
+                {children}
+            </svg>
+        );
+
+        const Phone = (props) => <IconBase {...props}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></IconBase>;
+        const UserCheck = (props) => <IconBase {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></IconBase>;
+        const Wrench = (props) => <IconBase {...props}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></IconBase>;
+        const TrendingDown = (props) => <IconBase {...props}><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></IconBase>;
+        const Award = (props) => <IconBase {...props}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></IconBase>;
+        const Calendar = (props) => <IconBase {...props}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconBase>;
+        const Settings = (props) => <IconBase {...props}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></IconBase>;
+        const X = (props) => <IconBase {...props}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconBase>;
+        const FileUp = (props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></IconBase>;
+        const Link = (props) => <IconBase {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconBase>;
+        const Save = (props) => <IconBase {...props}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconBase>;
+        const Megaphone = (props) => <IconBase {...props}><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></IconBase>;
+        const Image = (props) => <IconBase {...props}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></IconBase>;
+
+        // --- 自動日期計算函式 ---
+        const calculateAutoDateRange = () => {
+            const today = new Date();
+            let start = new Date(today);
+            let end = new Date(today);
+
+            if (today.getDate() === 1) {
+                // 如果今天是 1 號，範圍為上個月整月 (上月1日 ~ 上月月底)
+                start.setMonth(start.getMonth() - 1);
+                start.setDate(1);
+                end.setDate(0); // 設定日期為 0 會自動回到上個月最後一天
+            } else {
+                // 如果不是 1 號，範圍為當月 1 號 ~ 昨天
+                start.setDate(1);
+                end.setDate(today.getDate() - 1);
+            }
+
+            const formatDate = (date) => {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}/${m}/${d}`;
+            };
+
+            return `${formatDate(start)} - ${formatDate(end)}`;
+        };
+
+        // --- 組件邏輯開始 ---
+
+        const CircularMetric = ({ value, label, subLabel, colorClass, icon: Icon, bonus }) => {
+            const size = 420; 
+            const center = size / 2;
+            const strokeWidth = 32; 
+            const radius = (size - strokeWidth) / 2 - 10;
+            const circumference = 2 * Math.PI * radius;
+            const strokeDashoffset = circumference - (value / 100) * circumference;
+
+            return (
+                <div className="glass-panel rounded-3xl p-6 flex flex-col items-center justify-between h-full relative overflow-hidden group">
+                    <div className={`absolute top-0 left-0 w-full h-1.5 ${colorClass.replace('text-', 'bg-')}`}></div>
+                    
+                    <h3 className="text-5xl font-bold text-slate-200 mt-4 flex items-center gap-3">
+                        <Icon size={48} className={colorClass} />
+                        {label}
+                    </h3>
+                    
+                    <div className="relative flex items-center justify-center my-4 flex-grow w-full">
+                        <svg className="transform -rotate-90 w-full h-full max-h-[380px]" viewBox={`0 0 ${size} ${size}`}>
+                            <circle
+                                className="text-slate-800"
+                                strokeWidth={strokeWidth}
+                                stroke="currentColor"
+                                fill="transparent"
+                                r={radius}
+                                cx={center}
+                                cy={center}
+                            />
+                            <circle
+                                className={colorClass}
+                                strokeWidth={strokeWidth}
+                                strokeDasharray={circumference}
+                                strokeDashoffset={strokeDashoffset}
+                                strokeLinecap="round"
+                                stroke="currentColor"
+                                fill="transparent"
+                                r={radius}
+                                cx={center}
+                                cy={center}
+                                style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
+                            />
+                        </svg>
+                        
+                        <div className="absolute flex flex-col items-center justify-center">
+                            <span className="text-8xl font-black tracking-tighter text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex items-baseline">
+                                {value}<span className="text-4xl text-slate-400 font-bold ml-1">%</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="w-full bg-slate-800/50 rounded-xl p-4 flex justify-between items-center border border-slate-700/50 mt-auto">
+                        <span className="text-slate-400 font-medium text-xl">目前獎金</span>
+                        <span className={`text-7xl font-black ${colorClass} drop-shadow-lg`}>${bonus}</span>
+                    </div>
+                </div>
+            );
+        };
+
+        const DispatchMetric = ({ current, estimated, total, percentage, bonus }) => {
+            // 定義顏色狀態邏輯
+            let status = "safe";
+            let statusText = "";
+            let colorClass = "text-emerald-400";
+            let bgColorClass = "bg-emerald-500";
+            let bgLightColorClass = "bg-emerald-500/10";
+            let gradientFrom = "from-emerald-600";
+            let gradientTo = "to-emerald-400";
+            let shadowColor = "rgba(52,211,153,0.4)";
+
+            if (percentage >= 90) {
+                status = "danger";
+                statusText = "(危險!)";
+                colorClass = "text-red-500";
+                bgColorClass = "bg-red-500";
+                bgLightColorClass = "bg-red-500/10";
+                gradientFrom = "from-red-600";
+                gradientTo = "to-red-400";
+                shadowColor = "rgba(239,68,68,0.4)";
+            } else if (percentage >= 70) {
+                status = "warning";
+                statusText = "(注意!)";
+                colorClass = "text-orange-500";
+                bgColorClass = "bg-orange-500";
+                bgLightColorClass = "bg-orange-500/10";
+                gradientFrom = "from-orange-600";
+                gradientTo = "to-orange-400";
+                shadowColor = "rgba(249,115,22,0.4)";
+            }
+
+            return (
+                <div className="glass-panel rounded-3xl p-8 h-full flex flex-col justify-between relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 w-full h-1.5 ${bgColorClass}`}></div>
+                    
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h3 className="text-5xl font-bold text-slate-200 flex items-center gap-4">
+                                <div className={`p-3 ${bgLightColorClass} rounded-xl`}>
+                                    <Wrench size={48} className={colorClass} />
+                                </div>
+                                派拆總數
+                            </h3>
+                            <div className={`flex items-center gap-2 mt-4 ${colorClass} font-bold ${bgLightColorClass} px-4 py-2 rounded-full w-fit text-xl`}>
+                                <TrendingDown size={24} />
+                                <span>數值越低越好</span>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-8xl font-black text-white tracking-tight leading-none">{current}</div>
+                            <div className="text-slate-400 text-3xl font-medium mt-2">推估 {estimated} / 指標 {total}</div>
+                        </div>
+                    </div>
+
+                    <div className="mt-auto mb-8">
+                        <div className="flex justify-between text-3xl mb-4 font-bold text-slate-300">
+                            <span>推估佔比 {status !== "safe" && <span className={`${colorClass} ml-2`}>{statusText}</span>}</span>
+                            <span className={`${colorClass} text-5xl`}>{percentage}%</span>
+                        </div>
+                        <div className="h-14 w-full bg-slate-800 rounded-full overflow-hidden relative border border-slate-700">
+                            <div className="absolute left-[25%] top-0 bottom-0 w-px bg-slate-600/30"></div>
+                            <div className="absolute left-[50%] top-0 bottom-0 w-px bg-slate-600/30"></div>
+                            {/* 70% 橘色警戒線 */}
+                            <div className="absolute left-[70%] top-0 bottom-0 w-0.5 bg-orange-500/50 z-10" title="70% 警戒線"></div>
+                            {/* 90% 紅色警戒線 */}
+                            <div className="absolute left-[90%] top-0 bottom-0 w-0.5 bg-red-500/50 z-10" title="90% 危險線"></div>
+                            
+                            <div 
+                                className={`h-full bg-gradient-to-r ${gradientFrom} ${gradientTo} rounded-full shadow-[0_0_20px_${shadowColor}]`}
+                                style={{ width: `${Math.min(percentage, 100)}%`, transition: 'width 1s ease-out' }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-slate-700/50 flex justify-between items-end">
+                        <div className="flex flex-col">
+                            <span className="text-slate-400 text-2xl">推估獎金</span>
+                            <span className="text-base text-slate-500 mt-1">依據目前進度</span>
+                        </div>
+                        <span className={`text-7xl font-black ${colorClass} drop-shadow-lg`}>${bonus}</span>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 設定 Modal ---
+        const SettingsModal = ({ isOpen, onClose, data, onSave }) => {
+            const [localData, setLocalData] = useState(data);
+            const [activeTab, setActiveTab] = useState('manual');
+            const [csvUrl, setCsvUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRH4vNN6J-LaUwVWJhukAaqOZtn9OIymXNN3qaPk7Acdhso-rkAXGMFqDg7cNOA1yzJmKeoGKZKDzGt/pub?gid=0&single=true&output=csv');
+            const [csvError, setCsvError] = useState('');
+
+            useEffect(() => {
+                if(isOpen) setLocalData(data);
+            }, [isOpen, data]);
+
+            const handleChange = (path, value) => {
+                const keys = path.split('.');
+                setLocalData(prev => {
+                    const newData = { ...prev };
+                    let current = newData;
+                    for (let i = 0; i < keys.length - 1; i++) {
+                        current = current[keys[i]];
+                    }
+                    current[keys[keys.length - 1]] = value;
+                    return newData;
+                });
+            };
+
+            const handleCsvUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const text = event.target.result;
+                    parseCsv(text);
+                };
+                reader.readAsText(file);
+            };
+
+            const handleLogoUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    handleChange('logo', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const handleUrlFetch = async () => {
+                try {
+                    setCsvError('');
+                    let text = '';
+                    
+                    // 防快取參數
+                    const timestamp = Date.now();
+                    const fetchUrl = csvUrl.includes('?') 
+                        ? `${csvUrl}&t=${timestamp}` 
+                        : `${csvUrl}?t=${timestamp}`;
+
+                    try {
+                        // 1. 嘗試直接讀取 (加上防快取參數)
+                        const response = await fetch(fetchUrl);
+                        if (!response.ok) throw new Error('Direct fetch failed');
+                        text = await response.text();
+                    } catch (e) {
+                        console.log("直接讀取失敗，嘗試使用 CORS Proxy...");
+                        // 2. 如果失敗 (CORS 錯誤)，使用 CORS Proxy (AllOrigins)
+                        // Proxy 也加上 timestamp 防止 proxy server 快取
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(fetchUrl)}`;
+                        const response = await fetch(proxyUrl);
+                        if (!response.ok) throw new Error('無法讀取網址，請確認連結是否正確且已公開發布');
+                        text = await response.text();
+                    }
+                    
+                    if (text.trim().toLowerCase().startsWith('<!doctype') || text.includes('<html')) {
+                        throw new Error('格式錯誤：您使用的是「網頁」發布連結，請重新發布並選擇「逗號分隔值 (.csv)」格式。');
+                    }
+
+                    parseCsv(text);
+                } catch (err) {
+                    setCsvError(err.message || '讀取失敗：可能是網路問題或 CORS 限制，建議下載 CSV 後使用上傳功能');
+                }
+            };
+
+            const parseCSVLine = (line) => {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current.trim());
+                return result.map(val => {
+                    if (val.startsWith('"') && val.endsWith('"')) {
+                        val = val.slice(1, -1);
+                    }
+                    return val.replace(/""/g, '"');
+                });
+            };
+
+            const cleanNumber = (val) => {
+                if (typeof val !== 'string') return val;
+                return parseFloat(val.replace(/[$,]/g, ''));
+            };
+
+            const parseCsv = (text) => {
+                try {
+                    const rows = text.split('\n').map(row => row.trim()).filter(r => r);
+                    if (rows.length === 0) throw new Error('檔案為空');
+
+                    let cols = parseCSVLine(rows[0]);
+                    const kpi1ValTest = cleanNumber(cols[2]);
+                    if (isNaN(kpi1ValTest) && rows.length > 1) {
+                        cols = parseCSVLine(rows[1]);
+                    }
+
+                    if (cols.length < 11) throw new Error(`欄位數量不足 (偵測到 ${cols.length} 欄，需要至少 11 欄)`);
+
+                    const newData = {
+                        ...localData,
+                        dateRange: cols[0] || calculateAutoDateRange(),
+                        totalBonus: cols[1],
+                        kpi1: { value: cleanNumber(cols[2]), bonus: cols[3] },
+                        kpi2: { value: cleanNumber(cols[4]), bonus: cols[5] },
+                        kpi3: { 
+                            current: cleanNumber(cols[6]), 
+                            estimated: cleanNumber(cols[7]),
+                            target: cleanNumber(cols[8]), 
+                            bonus: cols[9] 
+                        },
+                        announcement: cols[10] || '' 
+                    };
+
+                    if (isNaN(newData.kpi1.value)) throw new Error('應答率(第3欄)格式錯誤，請確認為純數字');
+
+                    setLocalData(newData);
+                    alert('數據解析成功！');
+                } catch (err) {
+                    console.error(err);
+                    setCsvError(`解析失敗：${err.message}`);
+                }
+            };
+
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm modal-enter">
+                    <div className="bg-slate-800 border border-slate-600 w-[600px] max-w-[90vw] rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+                        {/* Header */}
+                        <div className="p-4 border-b border-slate-700 flex justify-between items-center">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <Settings size={20} /> 儀表板設定
+                            </h2>
+                            <button onClick={onClose} className="text-slate-400 hover:text-white">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex border-b border-slate-700">
+                            <button 
+                                className={`flex-1 py-3 font-medium transition-colors ${activeTab === 'manual' ? 'text-blue-400 border-b-2 border-blue-400 bg-slate-700/50' : 'text-slate-400 hover:bg-slate-700/30'}`}
+                                onClick={() => setActiveTab('manual')}
+                            >
+                                手動輸入
+                            </button>
+                            <button 
+                                className={`flex-1 py-3 font-medium transition-colors ${activeTab === 'csv' ? 'text-blue-400 border-b-2 border-blue-400 bg-slate-700/50' : 'text-slate-400 hover:bg-slate-700/30'}`}
+                                onClick={() => setActiveTab('csv')}
+                            >
+                                CSV 上傳
+                            </button>
+                            <button 
+                                className={`flex-1 py-3 font-medium transition-colors ${activeTab === 'url' ? 'text-blue-400 border-b-2 border-blue-400 bg-slate-700/50' : 'text-slate-400 hover:bg-slate-700/30'}`}
+                                onClick={() => setActiveTab('url')}
+                            >
+                                Google Sheet
+                            </button>
+                            <button 
+                                className={`flex-1 py-3 font-medium transition-colors ${activeTab === 'logo' ? 'text-blue-400 border-b-2 border-blue-400 bg-slate-700/50' : 'text-slate-400 hover:bg-slate-700/30'}`}
+                                onClick={() => setActiveTab('logo')}
+                            >
+                                Logo 設定
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                            {activeTab === 'manual' && (
+                                <div className="space-y-4">
+                                    <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                                        <label className="block text-sm text-yellow-400 font-bold mb-1 flex items-center gap-2">
+                                            <Megaphone size={16} /> 公告訊息 (跑馬燈)
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            value={localData.announcement || ''} 
+                                            onChange={(e) => handleChange('announcement', e.target.value)} 
+                                            placeholder="若輸入文字，將取代時間顯示為跑馬燈"
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white placeholder-slate-500 focus:border-yellow-500 focus:outline-none" 
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm text-slate-400 mb-1">統計區間</label>
+                                            <input 
+                                                type="text" 
+                                                value={localData.dateRange} 
+                                                onChange={(e) => handleChange('dateRange', e.target.value)} 
+                                                placeholder={`預設: ${calculateAutoDateRange()}`}
+                                                className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" 
+                                            />
+                                            <p className="text-xs text-slate-500 mt-1">留空將自動顯示當月累積日期</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-slate-400 mb-1">總推估獎金</label>
+                                            <input type="text" value={localData.totalBonus} onChange={(e) => handleChange('totalBonus', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                        </div>
+                                    </div>
+                                    <div className="border-t border-slate-700 pt-4">
+                                        <h3 className="text-blue-400 font-bold mb-2">應答率 (KPI 1)</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">數值 (%)</label>
+                                                <input type="number" step="0.1" value={localData.kpi1.value} onChange={(e) => handleChange('kpi1.value', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">獎金</label>
+                                                <input type="text" value={localData.kpi1.bonus} onChange={(e) => handleChange('kpi1.bonus', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="border-t border-slate-700 pt-4">
+                                        <h3 className="text-purple-400 font-bold mb-2">值機有效比 (KPI 2)</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">數值 (%)</label>
+                                                <input type="number" step="0.1" value={localData.kpi2.value} onChange={(e) => handleChange('kpi2.value', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">獎金</label>
+                                                <input type="text" value={localData.kpi2.bonus} onChange={(e) => handleChange('kpi2.bonus', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="border-t border-slate-700 pt-4">
+                                        <h3 className="text-emerald-400 font-bold mb-2">派拆總數 (KPI 3)</h3>
+                                        <div className="grid grid-cols-4 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">目前實際</label>
+                                                <input type="number" value={localData.kpi3.current} onChange={(e) => handleChange('kpi3.current', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-yellow-400 mb-1">推估數值</label>
+                                                <input type="number" value={localData.kpi3.estimated} onChange={(e) => handleChange('kpi3.estimated', e.target.value)} className="w-full bg-slate-900 border border-yellow-500 rounded p-2 text-white" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">目標數值</label>
+                                                <input type="number" value={localData.kpi3.target} onChange={(e) => handleChange('kpi3.target', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-slate-400 mb-1">獎金</label>
+                                                <input type="text" value={localData.kpi3.bonus} onChange={(e) => handleChange('kpi3.bonus', e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'csv' && (
+                                <div className="space-y-6 text-center py-8">
+                                    <div className="border-2 border-dashed border-slate-600 rounded-xl p-8 hover:bg-slate-700/30 transition-colors">
+                                        <FileUp size={48} className="mx-auto text-slate-400 mb-4" />
+                                        <p className="text-slate-300 mb-4">點擊或拖曳上傳 .csv 檔案</p>
+                                        <input type="file" accept=".csv" onChange={handleCsvUpload} className="block w-full text-sm text-slate-500
+                                            file:mr-4 file:py-2 file:px-4
+                                            file:rounded-full file:border-0
+                                            file:text-sm file:font-semibold
+                                            file:bg-blue-600 file:text-white
+                                            file:cursor-pointer hover:file:bg-blue-700
+                                        "/>
+                                    </div>
+                                    <div className="text-left bg-slate-900 p-4 rounded-lg">
+                                        <p className="text-xs text-slate-400 mb-2">CSV 格式範例 (一行，無空白)：</p>
+                                        <code className="text-xs text-green-400 break-all">
+                                            2026/01/01-06,5000,79.9,1200,64.9,1200,228,1178,2177,2600,本月目標衝刺中!
+                                        </code>
+                                        <p className="text-xs text-slate-500 mt-2">
+                                            順序：區間 | 總獎金 | KPI1數值 | KPI1獎金 | KPI2數值 | KPI2獎金 | KPI3實際 | <b>KPI3推估</b> | KPI3目標 | KPI3獎金 | 公告
+                                        </p>
+                                    </div>
+                                    {csvError && <p className="text-red-400 text-sm">{csvError}</p>}
+                                </div>
+                            )}
+
+                            {activeTab === 'url' && (
+                                <div className="space-y-6 py-4">
+                                    <div>
+                                        <label className="block text-sm text-slate-400 mb-2">Google Sheet CSV 連結</label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" 
+                                                value={csvUrl}
+                                                onChange={(e) => setCsvUrl(e.target.value)}
+                                                className="flex-1 bg-slate-900 border border-slate-700 rounded p-2 text-white"
+                                            />
+                                            <button onClick={handleUrlFetch} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white flex items-center gap-2">
+                                                <Link size={16} /> 讀取
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-2">
+                                            請至 Google Sheet > 檔案 > 分享 > 發布到網路 > 選擇格式為 CSV
+                                        </p>
+                                    </div>
+                                    {csvError && <p className="text-red-400 text-sm">{csvError}</p>}
+                                    <div className="text-left bg-slate-900 p-4 rounded-lg">
+                                        <p className="text-xs text-slate-400 mb-2">資料欄位順序要求 (支援第11欄公告)：</p>
+                                        <code className="text-xs text-green-400">
+                                            區間 | 總獎金 | KPI1數值 | KPI1獎金 | KPI2數值 | KPI2獎金 | KPI3實際 | <b>KPI3推估</b> | KPI3目標 | KPI3獎金 | 公告
+                                        </code>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'logo' && (
+                                <div className="space-y-6 text-center py-8">
+                                    <div className="mb-4">
+                                        <p className="text-slate-300 mb-2">目前預覽</p>
+                                        <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-lg mx-auto p-1">
+                                            <img src={localData.logo} alt="Current Logo" className="w-full h-full object-contain" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="border-2 border-dashed border-slate-600 rounded-xl p-6 hover:bg-slate-700/30 transition-colors">
+                                        <Image size={40} className="mx-auto text-slate-400 mb-3" />
+                                        <p className="text-slate-300 mb-3">上傳公司 Logo 圖片</p>
+                                        <input type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-sm text-slate-500
+                                            file:mr-4 file:py-2 file:px-4
+                                            file:rounded-full file:border-0
+                                            file:text-sm file:font-semibold
+                                            file:bg-blue-600 file:text-white
+                                            file:cursor-pointer hover:file:bg-blue-700
+                                        "/>
+                                    </div>
+                                    <div className="text-left bg-slate-900 p-4 rounded-lg">
+                                        <p className="text-xs text-slate-400">
+                                            說明：上傳的圖片將會儲存在瀏覽器中。建議使用正方形或圓形的 PNG/JPG 圖片，背景透明效果最佳。
+                                        </p>
+                                        <div className="mt-2 text-xs text-slate-500">
+                                            或是輸入圖片網址：
+                                            <input 
+                                                type="text" 
+                                                value={localData.logo.startsWith('data:') ? '' : localData.logo} 
+                                                onChange={(e) => handleChange('logo', e.target.value)}
+                                                className="w-full mt-1 bg-slate-800 border border-slate-700 rounded p-1 text-white"
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-4 border-t border-slate-700 flex justify-end gap-3 bg-slate-800/50">
+                            <button onClick={onClose} className="px-4 py-2 text-slate-300 hover:text-white transition-colors">取消</button>
+                            <button onClick={() => onSave(localData)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 font-bold shadow-lg shadow-blue-900/50 transition-all active:scale-95">
+                                <Save size={18} /> 儲存設定
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Dashboard = () => {
+            const defaultData = {
+                dateRange: calculateAutoDateRange(),
+                totalBonus: "5,000",
+                kpi1: { value: 79.9, bonus: "1,200" },
+                kpi2: { value: 64.9, bonus: "1,200" },
+                kpi3: { current: 228, estimated: 1178, target: 2177, bonus: "2,600" },
+                announcement: "",
+                logo: "https://www.tbc.net.tw/Content/images/logo.png"
+            };
+
+            const [data, setData] = useState(defaultData);
+            const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+            const [time, setTime] = useState(new Date());
+
+            useEffect(() => {
+                const savedData = localStorage.getItem('kpi_dashboard_data_v3');
+                if (savedData) {
+                    try {
+                        const parsedData = JSON.parse(savedData);
+                        if (!parsedData.kpi3.estimated) parsedData.kpi3.estimated = parsedData.kpi3.current;
+                        if (!parsedData.logo) parsedData.logo = defaultData.logo;
+                        if (!parsedData.dateRange) parsedData.dateRange = calculateAutoDateRange();
+                        setData(parsedData);
+                    } catch (e) {
+                        console.error('Failed to parse saved data');
+                    }
+                }
+            }, []);
+
+            const handleSaveData = (newData) => {
+                if (!newData.dateRange) newData.dateRange = calculateAutoDateRange();
+                setData(newData);
+                localStorage.setItem('kpi_dashboard_data_v3', JSON.stringify(newData));
+                setIsSettingsOpen(false);
+            };
+
+            useEffect(() => {
+                const timer = setInterval(() => setTime(new Date()), 1000);
+                return () => clearInterval(timer);
+            }, []);
+
+            const dispatchPercent = ((data.kpi3.estimated / data.kpi3.target) * 100).toFixed(1);
+
+            let kpi1Color = "text-blue-400";
+            if (data.kpi1.value <= 74.4) {
+                kpi1Color = "text-red-500";
+            } else if (data.kpi1.value <= 79.4) {
+                kpi1Color = "text-orange-500";
+            }
+
+            let kpi2Color = "text-purple-400";
+            if (data.kpi2.value <= 60) {
+                kpi2Color = "text-red-500";
+            } else if (data.kpi2.value <= 64.4) {
+                kpi2Color = "text-orange-500";
+            }
+
+            return (
+                <div className="h-screen w-screen p-6 flex flex-col gap-6 relative">
+                    
+                    {/* Header Bar */}
+                    <header className="flex justify-between items-center bg-slate-800/40 rounded-2xl p-5 border border-slate-700 shadow-xl overflow-hidden relative">
+                        <div className="flex items-center gap-4 z-10 bg-slate-800/40 pr-8 rounded-r-xl backdrop-blur-sm">
+                            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-lg shrink-0">
+                                <img 
+                                    src={data.logo} 
+                                    alt="Company Logo" 
+                                    className="w-full h-full object-contain p-1"
+                                    onError={(e) => {
+                                        e.target.onerror = null; 
+                                        e.target.src = "https://www.tbc.net.tw/Content/images/logo.png";
+                                    }}
+                                />
+                            </div>
+                            <div className="shrink-0">
+                                <h1 className="text-4xl font-black tracking-wider text-white">客服部 KPI 日報</h1>
+                                <div className="text-blue-300 font-bold text-3xl flex items-center gap-2 mt-1">
+                                    <Calendar size={18} />
+                                    統計區間：{data.dateRange}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex justify-end items-center h-full min-w-0">
+                            {data.announcement ? (
+                                <div className="marquee-container w-full h-full flex items-center bg-gradient-to-r from-transparent via-red-900/30 to-red-900/50 border-l-4 border-red-500 px-4 rounded-r-xl relative overflow-hidden">
+                                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-900/80 to-transparent z-10"></div>
+                                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-900/80 to-transparent z-10"></div>
+                                    <div className="w-full overflow-hidden">
+                                        <div className="animate-marquee text-4xl font-bold text-yellow-300 drop-shadow-md inline-block whitespace-nowrap">
+                                            <span className="mr-4">📢</span>
+                                            {data.announcement}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-right z-10 pl-8">
+                                     <div className="text-5xl font-mono font-black text-slate-200 leading-tight">
+                                        {time.toLocaleDateString('zh-TW', {year:'numeric', month:'long', day:'numeric'})}
+                                     </div>
+                                     <div className="text-slate-400 font-bold text-3xl mt-1 opacity-80">
+                                        {time.toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})}
+                                     </div>
+                                </div>
+                            )}
+                        </div>
+                    </header>
+
+                    {/* Total Bonus Hero */}
+                    <div className="glass-panel rounded-3xl p-8 flex items-center justify-between relative overflow-hidden border-l-8 border-yellow-500 glow-effect">
+                        <div className="z-10">
+                            <h2 className="text-5xl text-yellow-100 font-bold mb-1 flex items-center gap-4">
+                                <Award className="text-yellow-400 fill-yellow-400" size={48} />
+                                總推估獎金
+                            </h2>
+                            <p className="text-yellow-200/60 text-lg ml-16 mt-2">基於當前績效預估</p>
+                        </div>
+                        <div className="z-10">
+                            <span className="text-[7.5rem] leading-none font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-yellow-500 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
+                                ${data.totalBonus}
+                            </span>
+                        </div>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-96 h-96 bg-yellow-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+                    </div>
+
+                    {/* Main Content Grid */}
+                    <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
+                        <div className="col-span-3">
+                            <CircularMetric 
+                                value={data.kpi1.value}
+                                label="應答率"
+                                bonus={data.kpi1.bonus}
+                                colorClass={kpi1Color}
+                                icon={Phone}
+                            />
+                        </div>
+
+                        <div className="col-span-3">
+                            <CircularMetric 
+                                value={data.kpi2.value}
+                                label="值機有效比"
+                                bonus={data.kpi2.bonus}
+                                colorClass={kpi2Color}
+                                icon={UserCheck}
+                            />
+                        </div>
+
+                        <div className="col-span-6">
+                            <DispatchMetric 
+                                current={data.kpi3.current}
+                                estimated={data.kpi3.estimated}
+                                total={data.kpi3.target}
+                                percentage={dispatchPercent}
+                                bonus={data.kpi3.bonus}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Settings Trigger Icon */}
+                    <div className="absolute bottom-4 right-4 z-50">
+                        <div 
+                            className="settings-btn p-3 rounded-full text-white cursor-pointer shadow-lg border border-slate-600"
+                            onClick={() => setIsSettingsOpen(true)}
+                            title="數據設定"
+                        >
+                            <Settings size={28} />
+                        </div>
+                    </div>
+
+                    {/* Settings Modal */}
+                    <SettingsModal 
+                        isOpen={isSettingsOpen} 
+                        onClose={() => setIsSettingsOpen(false)}
+                        data={data}
+                        onSave={handleSaveData}
+                    />
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Dashboard />);
+    </script>
+</body>
+</html>
