@@ -210,6 +210,10 @@
 
         const DispatchMetric = ({ current, estimated, total, percentage, bonus }) => {
             // 定義顏色狀態邏輯
+            // >= 90% 紅色 (危險)
+            // >= 70% 橘色 (警告)
+            // < 70%  綠色 (安全)
+            
             let status = "safe";
             let statusText = "";
             let colorClass = "text-emerald-400";
@@ -297,6 +301,7 @@
         const SettingsModal = ({ isOpen, onClose, data, onSave }) => {
             const [localData, setLocalData] = useState(data);
             const [activeTab, setActiveTab] = useState('manual');
+            // 修改：設定預設 URL 為正確的 CSV 格式連結
             const [csvUrl, setCsvUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRH4vNN6J-LaUwVWJhukAaqOZtn9OIymXNN3qaPk7Acdhso-rkAXGMFqDg7cNOA1yzJmKeoGKZKDzGt/pub?gid=0&single=true&output=csv');
             const [csvError, setCsvError] = useState('');
 
@@ -329,12 +334,14 @@
                 reader.readAsText(file);
             };
 
+            // 新增：處理 Logo 上傳
             const handleLogoUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
 
                 const reader = new FileReader();
                 reader.onload = (event) => {
+                    // 將圖片轉為 Base64 字串存入資料中
                     handleChange('logo', event.target.result);
                 };
                 reader.readAsDataURL(file);
@@ -344,28 +351,22 @@
                 try {
                     setCsvError('');
                     let text = '';
-                    
-                    // 防快取參數
-                    const timestamp = Date.now();
-                    const fetchUrl = csvUrl.includes('?') 
-                        ? `${csvUrl}&t=${timestamp}` 
-                        : `${csvUrl}?t=${timestamp}`;
 
                     try {
-                        // 1. 嘗試直接讀取 (加上防快取參數)
-                        const response = await fetch(fetchUrl);
+                        // 1. 嘗試直接讀取
+                        const response = await fetch(csvUrl);
                         if (!response.ok) throw new Error('Direct fetch failed');
                         text = await response.text();
                     } catch (e) {
                         console.log("直接讀取失敗，嘗試使用 CORS Proxy...");
                         // 2. 如果失敗 (CORS 錯誤)，使用 CORS Proxy (AllOrigins)
-                        // Proxy 也加上 timestamp 防止 proxy server 快取
-                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(fetchUrl)}`;
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl)}`;
                         const response = await fetch(proxyUrl);
                         if (!response.ok) throw new Error('無法讀取網址，請確認連結是否正確且已公開發布');
                         text = await response.text();
                     }
                     
+                    // 檢查是否誤用到 HTML 連結
                     if (text.trim().toLowerCase().startsWith('<!doctype') || text.includes('<html')) {
                         throw new Error('格式錯誤：您使用的是「網頁」發布連結，請重新發布並選擇「逗號分隔值 (.csv)」格式。');
                     }
@@ -420,8 +421,8 @@
                     if (cols.length < 11) throw new Error(`欄位數量不足 (偵測到 ${cols.length} 欄，需要至少 11 欄)`);
 
                     const newData = {
-                        ...localData,
-                        dateRange: cols[0] || calculateAutoDateRange(),
+                        ...localData, // 保留原有的設定 (如 Logo)
+                        dateRange: cols[0] || calculateAutoDateRange(), // 修改：若 CSV 的日期欄位為空，則使用自動計算的日期
                         totalBonus: cols[1],
                         kpi1: { value: cleanNumber(cols[2]), bonus: cols[3] },
                         kpi2: { value: cleanNumber(cols[4]), bonus: cols[5] },
@@ -479,6 +480,7 @@
                             >
                                 Google Sheet
                             </button>
+                            {/* 新增 Logo Tab */}
                             <button 
                                 className={`flex-1 py-3 font-medium transition-colors ${activeTab === 'logo' ? 'text-blue-400 border-b-2 border-blue-400 bg-slate-700/50' : 'text-slate-400 hover:bg-slate-700/30'}`}
                                 onClick={() => setActiveTab('logo')}
@@ -510,7 +512,7 @@
                                                 type="text" 
                                                 value={localData.dateRange} 
                                                 onChange={(e) => handleChange('dateRange', e.target.value)} 
-                                                placeholder={`預設: ${calculateAutoDateRange()}`}
+                                                placeholder={`預設: ${calculateAutoDateRange()}`} // 加入預設提示
                                                 className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" 
                                             />
                                             <p className="text-xs text-slate-500 mt-1">留空將自動顯示當月累積日期</p>
@@ -626,6 +628,7 @@
                                 </div>
                             )}
 
+                            {/* 新增 Logo 設定頁面 */}
                             {activeTab === 'logo' && (
                                 <div className="space-y-6 text-center py-8">
                                     <div className="mb-4">
@@ -685,7 +688,7 @@
                 kpi2: { value: 64.9, bonus: "1,200" },
                 kpi3: { current: 228, estimated: 1178, target: 2177, bonus: "2,600" },
                 announcement: "",
-                logo: "https://www.tbc.net.tw/Content/images/logo.png"
+                logo: "https://raw.githubusercontent.com/phxan/iveskpi/refs/heads/main/LOGO010.png"
             };
 
             const [data, setData] = useState(defaultData);
@@ -693,7 +696,7 @@
             const [time, setTime] = useState(new Date());
 
             useEffect(() => {
-                const savedData = localStorage.getItem('kpi_dashboard_data_v3');
+                const savedData = localStorage.getItem('kpi_dashboard_data_v4');
                 if (savedData) {
                     try {
                         const parsedData = JSON.parse(savedData);
@@ -710,7 +713,7 @@
             const handleSaveData = (newData) => {
                 if (!newData.dateRange) newData.dateRange = calculateAutoDateRange();
                 setData(newData);
-                localStorage.setItem('kpi_dashboard_data_v3', JSON.stringify(newData));
+                localStorage.setItem('kpi_dashboard_data_v4', JSON.stringify(newData));
                 setIsSettingsOpen(false);
             };
 
@@ -761,6 +764,7 @@
                             </div>
                         </div>
 
+                        {/* Right Side: Clock OR Marquee */}
                         <div className="flex-1 flex justify-end items-center h-full min-w-0">
                             {data.announcement ? (
                                 <div className="marquee-container w-full h-full flex items-center bg-gradient-to-r from-transparent via-red-900/30 to-red-900/50 border-l-4 border-red-500 px-4 rounded-r-xl relative overflow-hidden">
