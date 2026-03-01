@@ -103,17 +103,24 @@
         <main class="p-4 lg:p-8 max-w-[1400px] mx-auto w-full space-y-6">
             <!-- KPI Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- 總市值-->
-                <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col justify-between hover:scale-[1.02] transition-transform group border-emerald-500/20">
-                    <div class="flex justify-between items-start mb-4">
+                <!-- 總市值 -->
+                <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col justify-between hover:scale-[1.02] transition-transform group border-emerald-500/20 relative overflow-hidden">
+                    <!-- 含息報酬率半透明底圖 (更新樣式) -->
+                    <div id="kpi-total-return-bg" class="absolute -bottom-2 right-0 text-[5.5rem] leading-[0.8] font-black opacity-[0.15] pointer-events-none select-none transition-colors flex items-baseline pr-2 pb-1"></div>
+                    
+                    <div class="relative z-10 flex justify-between items-start mb-4">
                         <p class="text-slate-400 text-sm font-bold tracking-wide">庫存總市值</p>
                         <div class="p-2 rounded-lg bg-emerald-500/10 ring-1 ring-emerald-500/20">
                             <i data-lucide="wallet" class="w-6 h-6 text-emerald-400 group-hover:scale-110 transition-transform"></i>
                         </div>
                     </div>
-                    <div>
+                    <div class="relative z-10">
                         <h3 id="kpi-market-value" class="text-3xl font-black text-white tracking-tight">--</h3>
-                        <p class="text-xs text-slate-500 mt-1">總成本: <span id="kpi-total-cost" class="font-medium text-slate-400">--</span></p>
+                        <p class="text-xs text-slate-500 mt-1 flex flex-wrap gap-x-2 gap-y-1">
+                            <span>總成本: <span id="kpi-total-cost" class="font-medium text-slate-400">--</span></span>
+                            <span class="text-slate-600">|</span>
+                            <span>初始投入: <span id="kpi-initial-invest" class="font-medium text-slate-400">--</span></span>
+                        </p>
                     </div>
                 </div>
 
@@ -261,7 +268,10 @@
         const parseNumber = (str) => {
             if (str === null || str === undefined || str === '') return 0;
             const clean = String(str).replace(/[\$,% ]/g, '').trim();
-            const num = parseFloat(clean);
+            let num = parseFloat(clean);
+            // 支援中文「萬」、「億」字單位轉換
+            if (clean.includes('萬')) num *= 10000;
+            if (clean.includes('億')) num *= 100000000;
             return isNaN(num) ? 0 : num;
         };
 
@@ -337,7 +347,7 @@
         let inventoryList = [];
         let historyList = [];
         let summary = {
-            totalMV: 0, totalCost: 0, totalProfit: 0, totalQty: 0, totalMonthly: 0
+            totalMV: 0, totalCost: 0, totalProfit: 0, totalQty: 0, totalMonthly: 0, initialInvest: 0
         };
 
         function processData(csvText) {
@@ -351,6 +361,14 @@
                 if (!rawLine.trim()) continue;
 
                 const row = parseCSVRow(rawLine);
+
+                // 擷取 R 欄 (index 17) 的初始投入金額 (向下掃描直到出現大於0的數字，避免被多重標題列干擾)
+                if (row.length > 17 && row[17]) {
+                    const val = parseNumber(row[17]);
+                    if (val > 0 && summary.initialInvest === 0) {
+                        summary.initialInvest = val;
+                    }
+                }
 
                 // 解析 A~J欄庫存資料(A欄有代號才算)
                 if (row[0] && row[0].trim() !== '') {
@@ -401,6 +419,20 @@
             // 1. 渲染 KPI Cards
             document.getElementById('kpi-market-value').innerText = formatCurrency(summary.totalMV);
             document.getElementById('kpi-total-cost').innerText = formatCurrency(summary.totalCost);
+            document.getElementById('kpi-initial-invest').innerText = formatCurrency(summary.initialInvest);
+            
+            // 計算並渲染含息報酬率 (浮水印背景)
+            let totalReturnPct = 0;
+            if (summary.initialInvest > 0) {
+                totalReturnPct = ((summary.totalMV - summary.initialInvest) / summary.initialInvest) * 100;
+            }
+            const returnBgEl = document.getElementById('kpi-total-return-bg');
+            const roundedPct = Math.round(totalReturnPct); // 四捨五入至個位數
+            const signPct = roundedPct >= 0 ? '+' : '';
+            
+            // 數字與 % 符號分離大小
+            returnBgEl.innerHTML = `${signPct}${roundedPct}<span class="text-4xl font-bold ml-0.5 tracking-tighter">%</span>`;
+            returnBgEl.className = `absolute -bottom-2 right-0 text-[5.5rem] leading-[0.8] font-black opacity-[0.15] pointer-events-none select-none transition-colors flex items-baseline pr-2 pb-1 ${roundedPct >= 0 ? COLOR_UP : COLOR_DOWN}`;
 
             const profitEl = document.getElementById('kpi-profit');
             const profitPctEl = document.getElementById('kpi-profit-pct');
