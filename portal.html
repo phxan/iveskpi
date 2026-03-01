@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代理投資 - 帳戶管理入口</title>
+
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 引入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind 設定 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Noto Sans TC", 'sans-serif'],
+                    },
+                    colors: {
+                        rose: { 400: '#fb7185', 500: '#f43f5e' },
+                        emerald: { 400: '#34d399', 500: '#10b981' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 自訂 CSS -->
+    <style>
+        body {
+            background-color: #020617; /* slate-950 */
+            color: #f8fafc; /* slate-50 */
+        }
+
+        /* 玻璃擬物風格 */
+        .glass-card {
+            background-color: rgba(30, 41, 59, 0.6); /* slate-800 帶透明 */
+            backdrop-filter: blur(12px);
+        }
+        
+        /* 選單按鈕過渡效果 */
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body class="antialiased h-screen w-full flex flex-col md:flex-row overflow-hidden bg-slate-950">
+
+    <!-- 左側邊欄 (Sidebar) / 手機版為上方導覽列 -->
+    <aside class="w-full md:w-64 lg:w-72 flex-shrink-0 glass-card border-b md:border-b-0 md:border-r border-slate-700/50 flex flex-col z-20">
+        
+        <!-- Logo 區塊 -->
+        <div class="p-4 md:p-6 border-b border-slate-700/50 flex items-center gap-3">
+            <div class="p-2 bg-slate-800 rounded-xl ring-1 ring-slate-700 shadow-lg hidden md:block">
+                <i data-lucide="layout-dashboard" class="w-6 h-6 text-blue-500"></i>
+            </div>
+            <div class="flex items-baseline gap-2 md:block">
+                <h1 class="text-xl font-black text-white tracking-tight">代理投資</h1>
+                <p class="text-[10px] text-blue-400 tracking-widest uppercase font-bold md:mt-1">Portal</p>
+            </div>
+        </div>
+
+        <!-- 選單項目 -->
+        <nav class="p-2 md:p-4 flex md:flex-col gap-2 md:gap-3 overflow-x-auto flex-1 md:flex-none">
+            <p class="hidden md:block text-xs font-bold text-slate-500 mb-2 px-2 uppercase tracking-wider">帳戶切換</p>
+            
+            <button id="btn-max" onclick="switchPage('max')" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 px-4 py-3 rounded-xl border-b-4 md:border-b-0 md:border-l-4 border-blue-500 bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap">
+                <i data-lucide="user" class="w-4 h-4 md:w-5 md:h-5"></i>
+                MAX 庫存
+            </button>
+
+            <button id="btn-black" onclick="switchPage('black')" class="nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 px-4 py-3 rounded-xl border-b-4 md:border-b-0 md:border-l-4 border-transparent text-slate-400 hover:bg-slate-800/50 font-medium whitespace-nowrap">
+                <i data-lucide="user" class="w-4 h-4 md:w-5 md:h-5"></i>
+                阿直 庫存
+            </button>
+        </nav>
+
+        <div class="hidden md:block mt-auto p-4 border-t border-slate-700/50 text-center">
+            <p class="text-[10px] text-slate-600">Designed in Dark UI</p>
+        </div>
+    </aside>
+
+    <!-- 右側主要內容區塊 (iFrame 嵌入) -->
+    <main class="flex-1 relative z-10 h-full w-full bg-[#020617]">
+        <!-- 載入中動畫 -->
+        <div id="loader" class="absolute inset-0 flex flex-col items-center justify-center bg-[#020617] z-20 transition-opacity duration-300">
+            <i data-lucide="loader-2" class="w-10 h-10 text-blue-500 animate-spin mb-4"></i>
+            <p class="text-slate-400 text-sm animate-pulse tracking-widest">正在載入帳戶資料...</p>
+        </div>
+        
+        <!-- 嵌入的網頁 -->
+        <iframe 
+            id="content-frame" 
+            src="https://phxan.github.io/iveskpi/max.html" 
+            class="w-full h-full border-none relative z-10"
+            onload="hideLoader()"
+        ></iframe>
+    </main>
+
+    <script>
+        // 初始化 Icons
+        lucide.createIcons();
+
+        // 頁面連結設定
+        const pages = {
+            max: 'https://phxan.github.io/iveskpi/max.html',
+            black: 'https://phxan.github.io/iveskpi/black.html'
+        };
+
+        const btnMax = document.getElementById('btn-max');
+        const btnBlack = document.getElementById('btn-black');
+        const iframe = document.getElementById('content-frame');
+        const loader = document.getElementById('loader');
+
+        function showLoader() {
+            loader.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function hideLoader() {
+            loader.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function switchPage(user) {
+            // 如果點擊的是目前已經在看的頁面，就不做動作
+            if (iframe.src === pages[user]) return;
+
+            // 1. 顯示載入中遮罩
+            showLoader();
+            
+            // 2. 更換 iFrame 網址
+            iframe.src = pages[user];
+
+            // 3. 共同的未選中樣式
+            const baseClass = 'nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 px-4 py-3 rounded-xl border-b-4 md:border-b-0 md:border-l-4 border-transparent text-slate-400 hover:bg-slate-800/50 font-medium whitespace-nowrap';
+            
+            btnMax.className = baseClass;
+            btnBlack.className = baseClass;
+
+            // 4. 根據點擊目標加上專屬選中樣式 (MAX 藍色 / 阿直 綠色)
+            if (user === 'max') {
+                btnMax.className = 'nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 px-4 py-3 rounded-xl border-b-4 md:border-b-0 md:border-l-4 border-blue-500 bg-blue-500/10 text-blue-400 font-bold whitespace-nowrap';
+            } else {
+                btnBlack.className = 'nav-btn flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 md:gap-3 px-4 py-3 rounded-xl border-b-4 md:border-b-0 md:border-l-4 border-emerald-500 bg-emerald-500/10 text-emerald-400 font-bold whitespace-nowrap';
+            }
+        }
+    </script>
+</body>
+</html>
+```
