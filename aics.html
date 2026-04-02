@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能客服現況與戰略趨勢儀表板</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 1.5rem; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* 為表格添加平滑滾動 */
+        .overflow-x-auto { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900"><i class="fa-solid fa-robot text-blue-500 mr-2"></i>智能客服現況與戰略趨勢儀表板</h1>
+                <p class="text-sm text-gray-500 mt-1" id="last-update-time">資料來源：Google Sheets CSV 同步中...</p>
+            </div>
+            <div>
+                <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow flex items-center transition">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> 重新整理
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="py-20 text-center">
+            <div class="loader mb-4"></div>
+            <p class="text-gray-500">正在從 Google Sheets 載入並分析數據...</p>
+        </div>
+
+        <div id="dashboard-content" class="hidden">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+                <!-- Card 1: Friends (LINE Style) -->
+                <div id="kpi-friends-card" class="card border-l-4 border-[#06C755] hidden">
+                    <h3 class="text-gray-500 text-sm font-semibold mb-1"><i class="fa-brands fa-line text-[#06C755] mr-1"></i>LINE 總好友數 <span class="current-month-label text-xs font-normal"></span></h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-3xl font-bold text-[#06C755]" id="kpi-friends">-</span>
+                        <span class="text-sm font-medium" id="kpi-friends-mom">-%</span>
+                    </div>
+                </div>
+                <!-- Card 2: Visitors -->
+                <div class="card border-l-4 border-blue-500">
+                    <h3 class="text-gray-500 text-sm font-semibold mb-1">最新總訪問人數 <span class="current-month-label text-xs font-normal"></span></h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-3xl font-bold text-gray-800" id="kpi-total">-</span>
+                        <span class="text-sm font-medium" id="kpi-total-mom">-%</span>
+                    </div>
+                </div>
+                <!-- Card 3: Smart -->
+                <div class="card border-l-4 border-indigo-500">
+                    <h3 class="text-gray-500 text-sm font-semibold mb-1">智能客服處理量</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-3xl font-bold text-indigo-600" id="kpi-smart">-</span>
+                        <span class="text-sm font-medium" id="kpi-smart-mom">-%</span>
+                    </div>
+                </div>
+                <!-- Card 4: Rate -->
+                <div class="card border-l-4 border-emerald-500">
+                    <h3 class="text-gray-500 text-sm font-semibold mb-1">AI 攔截率</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-3xl font-bold text-emerald-600" id="kpi-rate">-</span>
+                        <span class="text-sm font-medium" id="kpi-rate-mom">-%</span>
+                    </div>
+                </div>
+                <!-- Card 5: Human -->
+                <div class="card border-l-4 border-orange-400">
+                    <h3 class="text-gray-500 text-sm font-semibold mb-1">真人客服處理量</h3>
+                    <div class="flex items-end justify-between">
+                        <span class="text-3xl font-bold text-orange-500" id="kpi-human">-</span>
+                        <span class="text-sm font-medium" id="kpi-human-mom">-%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Chart: Friends vs Visitors Funnel -->
+            <div id="friends-chart-container" class="card mb-8 hidden">
+                <h3 class="text-lg font-semibold mb-2 text-gray-700">
+                    用戶基數與進線漏斗連動分析 (好友數 vs 訪問人數)
+                    <span id="friends-avg-growth-label" class="text-sm font-bold text-[#06C755] ml-2"></span>
+                    <span id="visitors-avg-growth-label" class="text-sm font-bold text-blue-600 ml-2"></span>
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">追蹤「過去 6 個月實績」至「未來 5 年預估」。浮動視窗可查看各里程碑之間的區間成長變化。</p>
+                <div style="position: relative; height: 320px; width: 100%;">
+                    <canvas id="friendsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Historical Trend -->
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-700">
+                        歷月服務量結構分析 
+                        <span id="historical-ratio-label" class="text-sm font-bold text-blue-600 ml-2"></span>
+                    </h3>
+                    <div style="position: relative; height: 280px; width: 100%;">
+                        <canvas id="historicalChart"></canvas>
+                    </div>
+                </div>
+                <!-- Automation Rate Trend -->
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-700">
+                        智能攔截率趨勢 (Automation Rate)
+                        <span id="current-rate-label" class="text-sm font-bold text-emerald-600 ml-2"></span>
+                    </h3>
+                    <div style="position: relative; height: 280px; width: 100%;">
+                        <canvas id="rateChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 (Strategic Forecast) -->
+            <div class="card mb-8">
+                <h3 class="text-lg font-semibold mb-2 text-gray-700">戰略規劃里程碑 (人力需求預測)</h3>
+                <p class="text-sm text-gray-500 mb-4">擷取過去 6 個月實績，並依據歷史迴歸模型預測：次月、今年底，以及未來 5 年年底的人力佈局指標。</p>
+                <div style="position: relative; height: 350px; width: 100%;">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Raw Data Table -->
+            <div class="card mb-8 overflow-hidden">
+                <h3 class="text-lg font-semibold mb-4 text-gray-700"><i class="fa-solid fa-table border-gray-300 mr-2"></i>營運明細 (近 12 個月實績)</h3>
+                <div class="overflow-x-auto relative">
+                    <table class="min-w-full border-collapse text-sm" id="raw-data-table">
+                        <thead class="bg-gray-100 border-b border-gray-300" id="data-table-head">
+                            <!-- Dynamic Headers -->
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white" id="data-table-body">
+                            <!-- Dynamic Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Analysis Insights -->
+            <div class="card bg-blue-50 border border-blue-100">
+                <h3 class="text-lg font-semibold mb-2 text-blue-800"><i class="fa-solid fa-lightbulb text-yellow-500 mr-2"></i>數據洞察與營運建議</h3>
+                <ul class="list-disc list-inside text-gray-700 space-y-3" id="insights-list">
+                    <!-- Dynamic insights -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEQWERcUjt7W6xCRs4K0zxltt0Ns77Gr4Aa7Zjawlfd9KqOo0q0vRaD4ZCW5E1y2uaVXiyASkC1Mjm/pub?gid=216099690&single=true&output=csv';
+        let charts = {};
+
+        // 智能辨識是否包含小數點或時間的格式化函數
+        const formatNum = (num, title = "") => {
+            // 若已經是字串(例如 00:15:20) 則直接回傳
+            if (typeof num === 'string') return num;
+            if (typeof num !== 'number' || isNaN(num)) return '-';
+            
+            // 針對名稱包含「時間」的指標進行 hh:mm:ss 轉換
+            if (title.includes('時間')) {
+                let totalSecs = 0;
+                if (num > 0 && num < 1) {
+                    // Google Sheets 的時間格式為「天」的比例 (例如 0.0104 = 15分鐘)
+                    totalSecs = Math.round(num * 24 * 60 * 60);
+                } else if (num >= 1 && num <= 100) {
+                    // 假設原資料是分鐘數 (例如 12.5 = 12分30秒)
+                    totalSecs = Math.round(num * 60);
+                } else if (num > 100) {
+                    // 假設原資料是秒數 (例如 750 秒)
+                    totalSecs = Math.round(num);
+                }
+                
+                if (totalSecs > 0 || num === 0) {
+                    let h = Math.floor(totalSecs / 3600);
+                    let m = Math.floor((totalSecs % 3600) / 60);
+                    let s = totalSecs % 60;
+                    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                }
+            }
+
+            // 如果帶有小數，保留 1-2 位小數，否則不留
+            if (num % 1 !== 0) {
+                return new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 }).format(num);
+            }
+            return new Intl.NumberFormat('en-US').format(num);
+        };
+
+        const getMoM = (current, previous) => {
+            if (!previous) return 0;
+            return (((current - previous) / previous) * 100).toFixed(1);
+        };
+
+        const setMoMUI = (elementId, value, reverseColor = false) => {
+            const el = document.getElementById(elementId);
+            const numVal = parseFloat(value);
+            if (numVal > 0) {
+                el.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${value}%`;
+                el.className = `text-sm font-medium ${reverseColor ? 'text-red-500' : 'text-emerald-500'}`;
+            } else if (numVal < 0) {
+                el.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${value}%`;
+                el.className = `text-sm font-medium ${reverseColor ? 'text-emerald-500' : 'text-red-500'}`;
+            } else {
+                el.innerHTML = `0%`;
+                el.className = `text-sm font-medium text-gray-500`;
+            }
+        };
+
+        function linearRegression(y) {
+            let n = y.length;
+            let sum_x = 0, sum_y = 0, sum_xy = 0, sum_xx = 0;
+            for (let i = 0; i < n; i++) {
+                sum_x += i;
+                sum_y += y[i];
+                sum_xy += (i * y[i]);
+                sum_xx += (i * i);
+            }
+            let slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
+            let intercept = (sum_y - slope * sum_x) / n;
+            return { slope, intercept };
+        }
+
+        function addMonths(dateString, monthsToAdd) {
+            let parts = dateString.split('-');
+            let year = parseInt(parts[0], 10);
+            let month = parseInt(parts[1], 10) - 1;
+            let d = new Date(year, month + monthsToAdd, 1);
+            let y = d.getFullYear();
+            let m = String(d.getMonth() + 1).padStart(2, '0');
+            return `${y}-${m}`;
+        }
+
+        function calculateMonthDiff(date1, date2) {
+            let [y1, m1] = date1.split('-').map(Number);
+            let [y2, m2] = date2.split('-').map(Number);
+            return (y2 - y1) * 12 + (m2 - m1);
+        }
+
+        // 共用的戰略預測里程碑節點運算
+        function getMilestoneNodes(labels) {
+            const n = labels.length;
+            let targetLabels = [];
+            let targetIndices = [];
+
+            for (let i = Math.max(0, n - 6); i < n; i++) {
+                targetLabels.push(labels[i]);
+                targetIndices.push(i);
+            }
+
+            let latestDate = labels[n-1];
+            let nextMonthDate = addMonths(latestDate, 1);
+            targetLabels.push(nextMonthDate); 
+            targetIndices.push(n);
+
+            let currentYear = parseInt(latestDate.split('-')[0]);
+            let endOfCurrentYear = `${currentYear}-12`;
+            let diffToThisYearEnd = calculateMonthDiff(labels[0], endOfCurrentYear);
+            if (diffToThisYearEnd > n) {
+                targetLabels.push(endOfCurrentYear); 
+                targetIndices.push(diffToThisYearEnd);
+            }
+
+            for (let i = 1; i <= 5; i++) {
+                let targetYear = currentYear + i;
+                let dateStr = `${targetYear}-12`;
+                targetLabels.push(dateStr); 
+                targetIndices.push(calculateMonthDiff(labels[0], dateStr));
+            }
+
+            const pastCount = targetIndices.filter(idx => idx < n).length;
+
+            return { targetLabels, targetIndices, pastCount, n };
+        }
+
+        async function fetchData() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('dashboard-content').classList.add('hidden');
+
+            Papa.parse(csvUrl + "&t=" + new Date().getTime(), {
+                download: true,
+                complete: function(results) { processData(results.data); },
+                error: function(err) {
+                    alert('無法讀取 CSV 資料，請檢查連結。');
+                    console.error(err);
+                }
+            });
+        }
+
+        function processData(data) {
+            let timeRow = null;
+            let timeRowIndex = -1;
+            
+            // 1. 尋找包含「時間」的表頭列
+            for (let i = 0; i < Math.min(25, data.length); i++) {
+                if (!data[i]) continue;
+                const rowStr = data[i].join('').replace(/\s/g, '');
+                if (rowStr.includes('時間')) {
+                    timeRow = data[i];
+                    timeRowIndex = i;
+                    break;
+                }
+            }
+
+            if (!timeRow) {
+                alert('解析表格格式失敗，找不到「時間」欄位。');
+                return;
+            }
+
+            // 2. 自動判斷資料真正的起始點
+            let startIndex = timeRow.findIndex(cell => String(cell).trim().match(/^20\d{2}[-/]\d{2}/));
+            if (startIndex === -1) return alert('找不到有效的時間資料。');
+
+            let validLength = 0;
+            for (let i = startIndex; i < timeRow.length; i++) {
+                if (String(timeRow[i]).trim() !== '') validLength++;
+                else break;
+            }
+
+            // 3. 提取所有月份時間並反轉（舊至新）
+            let labels = timeRow.slice(startIndex, startIndex + validLength).reverse().map(d => String(d).trim().substring(0, 7).replace('/', '-'));
+            
+            // 4. 動態擷取「所有的」資料行供表格使用，同時抓取圖表需要的關鍵陣列
+            let tableRows = [];
+            let smartData, humanData, totalData;
+            let friendsData = [];
+
+            for (let i = 0; i < data.length; i++) {
+                if (i === timeRowIndex) continue; // 略過時間行
+                let row = data[i];
+                if (!row) continue;
+                
+                // 尋找此行的指標標題（通常在資料開始的前一格或前兩格）
+                let title = "";
+                for(let j = startIndex - 1; j >= 0; j--) {
+                    if(row[j] && String(row[j]).trim() !== '') {
+                        title = String(row[j]).trim();
+                        break;
+                    }
+                }
+                
+                if(!title) continue; // 如果找不到標題，略過此行
+
+                // 擷取數值、轉成數字並反轉陣列
+                let rowData = row.slice(startIndex, startIndex + validLength).reverse().map(v => {
+                    let valStr = String(v).trim();
+                    if(valStr === '') return 0;
+                    
+                    // 如果本身就是帶有冒號的時間字串 (例如 00:15:20 或 15:20)，直接保留原字串
+                    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(valStr)) {
+                        return valStr;
+                    }
+
+                    let valStrNoComma = valStr.replace(/,/g, '');
+                    let parsed = Number(valStrNoComma);
+                    // 若無法轉為數字，保留原始字串，避免顯示為 0
+                    return isNaN(parsed) ? valStr : parsed;
+                });
+
+                // 將所有解析成功的行都推入 tableRows 陣列中，這會完整呈現在下方的表格
+                tableRows.push({ title: title, data: rowData });
+
+                // 精準綁定圖表所需的 4 個關鍵數據
+                let t = title.replace(/\s/g, '');
+                if (t.includes('智能客服處理量')) smartData = rowData;
+                else if (t.includes('真人客服處理量') && !t.includes('日均')) humanData = rowData;
+                else if ((t.includes('訪問人數') || t === 'LINE訪問人數') && !t.includes('日均')) totalData = rowData;
+                else if (t.includes('好友') || t.includes('粉絲')) friendsData = rowData;
+            }
+
+            if (!smartData || !humanData || !totalData) {
+                alert('解析失敗：找不到供圖表繪製的「智能客服/真人客服/訪問人數」關鍵數據。表格可能已跑版。');
+                return;
+            }
+
+            // 5. 計算 AI 攔截率
+            let rateData = smartData.map((smart, i) => totalData[i] > 0 ? (smart / totalData[i]) * 100 : 0);
+
+            // 6. 渲染 UI
+            updateKPIs(labels, totalData, smartData, humanData, rateData, friendsData);
+            
+            if (friendsData.length > 0) {
+                document.getElementById('kpi-friends-card').classList.remove('hidden');
+                document.getElementById('friends-chart-container').classList.remove('hidden');
+                renderFriendsChart(labels, friendsData, totalData);
+            }
+
+            renderHistoricalChart(labels, smartData, humanData, totalData);
+            renderRateChart(labels, rateData);
+            renderStrategicForecastChart(labels, smartData, humanData, totalData);
+            generateInsights(labels, rateData, smartData, humanData, friendsData, totalData);
+
+            // 渲染近 12 個月原始所有數據的表格
+            renderDataTable(labels, tableRows, rateData);
+
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('dashboard-content').classList.remove('hidden');
+            document.getElementById('last-update-time').innerText = `最後更新時間：${new Date().toLocaleString()}`;
+        }
+
+        function updateKPIs(labels, totalData, smartData, humanData, rateData, friendsData) {
+            const n = labels.length;
+            
+            document.querySelectorAll('.current-month-label').forEach(el => {
+                el.innerText = `(${labels[n-1]})`;
+            });
+            
+            if (friendsData.length > 0) {
+                document.getElementById('kpi-friends').innerText = formatNum(friendsData[n-1]);
+                setMoMUI('kpi-friends-mom', getMoM(friendsData[n-1], friendsData[n-2]));
+            }
+
+            document.getElementById('kpi-total').innerText = formatNum(totalData[n-1]);
+            setMoMUI('kpi-total-mom', getMoM(totalData[n-1], totalData[n-2]));
+
+            document.getElementById('kpi-smart').innerText = formatNum(smartData[n-1]);
+            setMoMUI('kpi-smart-mom', getMoM(smartData[n-1], smartData[n-2]));
+
+            let currentRate = rateData[n-1].toFixed(1);
+            document.getElementById('kpi-rate').innerText = currentRate + '%';
+            setMoMUI('kpi-rate-mom', (rateData[n-1] - rateData[n-2]).toFixed(1));
+
+            document.getElementById('kpi-human').innerText = formatNum(humanData[n-1]);
+            setMoMUI('kpi-human-mom', getMoM(humanData[n-1], humanData[n-2]), true);
+
+            let smartPct = ((smartData[n-1] / totalData[n-1]) * 100).toFixed(1);
+            let humanPct = ((humanData[n-1] / totalData[n-1]) * 100).toFixed(1);
+            document.getElementById('historical-ratio-label').innerText = `(目前佔比：真人 ${humanPct}% / 智能 ${smartPct}%)`;
+            document.getElementById('current-rate-label').innerText = `(目前智能客服服務佔比：${smartPct}%)`;
+
+            // 計算並顯示平均月成長數與百分比
+            if (friendsData.length > 0) {
+                const getAverageGrowth = (data) => {
+                    if (data.length < 2) return { abs: 0, pct: 0 };
+                    // 計算歷史區間的絕對月均成長量
+                    const absGrowth = (data[data.length - 1] - data[0]) / (data.length - 1);
+                    // 計算歷史區間的月均成長百分比
+                    let totalPct = 0, valid = 0;
+                    for(let i=1; i<data.length; i++) {
+                        if(data[i-1] > 0) { totalPct += (data[i] - data[i-1]) / data[i-1]; valid++; }
+                    }
+                    return { abs: absGrowth, pct: valid > 0 ? (totalPct / valid) * 100 : 0 };
+                };
+                
+                let fGrowth = getAverageGrowth(friendsData);
+                let vGrowth = getAverageGrowth(totalData);
+
+                const elF = document.getElementById('friends-avg-growth-label');
+                if(elF) elF.innerText = `(好友月均成長: ${fGrowth.abs > 0 ? '+' : ''}${formatNum(Math.round(fGrowth.abs))} / ${fGrowth.pct > 0 ? '+' : ''}${fGrowth.pct.toFixed(1)}%)`;
+                
+                const elV = document.getElementById('visitors-avg-growth-label');
+                if(elV) elV.innerText = `(訪問月均成長: ${vGrowth.abs > 0 ? '+' : ''}${formatNum(Math.round(vGrowth.abs))} / ${vGrowth.pct > 0 ? '+' : ''}${vGrowth.pct.toFixed(1)}%)`;
+            }
+        }
+
+        function destroyChart(id) {
+            if (charts[id]) charts[id].destroy();
+        }
+
+        // ==========================================
+        // Chart 1: 用戶基數與進線漏斗 (好友數 vs 訪問)
+        // ==========================================
+        function renderFriendsChart(labels, friends, visitors) {
+            destroyChart('friendsChart');
+            
+            const { targetLabels, targetIndices, pastCount, n } = getMilestoneNodes(labels);
+            const friendsReg = linearRegression(friends);
+            const visitorsReg = linearRegression(visitors);
+
+            let friendsPoints = [];
+            let visitorsPoints = [];
+
+            targetIndices.forEach(xIndex => {
+                let isFuture = xIndex >= n;
+                if (!isFuture) {
+                    friendsPoints.push(friends[xIndex]);
+                    visitorsPoints.push(visitors[xIndex]);
+                } else {
+                    let pF = friendsReg.intercept + (friendsReg.slope * xIndex);
+                    let pV = visitorsReg.intercept + (visitorsReg.slope * xIndex);
+                    friendsPoints.push(Math.max(pF, 0));
+                    visitorsPoints.push(Math.max(pV, 0));
+                }
+            });
+
+            const lineColor = '#06C755'; 
+            const lineForecastColor = '#86efac'; 
+            const barColor = 'rgba(59, 130, 246, 0.8)'; 
+            const barForecastColor = 'rgba(147, 197, 253, 0.5)'; 
+
+            const ctx = document.getElementById('friendsChart').getContext('2d');
+            charts['friendsChart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: targetLabels,
+                    datasets: [
+                        {
+                            label: 'LINE 好友數 (右軸)',
+                            data: friendsPoints,
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            yAxisID: 'y-friends',
+                            tension: 0.2,
+                            fill: false,
+                            segment: {
+                                borderDash: ctx => ctx.p0DataIndex >= (pastCount - 1) ? [5, 5] : undefined,
+                                borderColor: ctx => ctx.p0DataIndex >= (pastCount - 1) ? lineForecastColor : lineColor,
+                            },
+                            pointBackgroundColor: targetIndices.map(i => i < n ? lineColor : '#fff'),
+                            pointBorderColor: targetIndices.map(i => i < n ? lineColor : lineForecastColor),
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: '總訪問人數 (左軸)',
+                            data: visitorsPoints,
+                            type: 'bar',
+                            yAxisID: 'y-visitors',
+                            borderRadius: 4,
+                            backgroundColor: targetIndices.map(i => i < n ? barColor : barForecastColor)
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                        'y-visitors': { type: 'linear', position: 'left', beginAtZero: true, min: 0, title: { display: true, text: '訪問人數' } },
+                        'y-friends': { type: 'linear', position: 'right', beginAtZero: true, min: 0, grid: { drawOnChartArea: false }, title: { display: true, text: '總好友數' } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.parsed.y;
+                                    let idx = context.dataIndex;
+                                    let dsLabel = context.datasetIndex === 0 ? 'LINE 好友數' : '總訪問人數';
+                                    let res = `${dsLabel}: ${formatNum(val)}`;
+                                    
+                                    if (idx > 0) {
+                                        let prevVal = context.dataset.data[idx-1];
+                                        if (prevVal > 0) {
+                                            let pct = (((val - prevVal) / prevVal) * 100).toFixed(1);
+                                            let sign = pct > 0 ? '+' : '';
+                                            res += ` (較前點成長 ${sign}${pct}%)`;
+                                        }
+                                    }
+                                    return res;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // Chart 2: 歷史堆疊圖 (包含佔比顯示)
+        // ==========================================
+        function renderHistoricalChart(labels, smart, human, total) {
+            destroyChart('historicalChart');
+            const ctx = document.getElementById('historicalChart').getContext('2d');
+            charts['historicalChart'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: '真人客服', data: human, backgroundColor: 'rgba(249, 115, 22, 0.8)', borderWidth: 0, stack: 'Stack 0' },
+                        { label: '智能客服', data: smart, backgroundColor: 'rgba(79, 70, 229, 0.8)', borderWidth: 0, stack: 'Stack 0' },
+                        { label: '總訪問人數', data: total, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [5, 5], pointRadius: 2, fill: false }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, min: 0 } },
+                    plugins: { 
+                        legend: { position: 'top', labels: { usePointStyle: true } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let val = context.parsed.y;
+                                    let totalArr = context.chart.data.datasets[2].data; 
+                                    let totalVal = totalArr[context.dataIndex];
+                                    
+                                    if (context.datasetIndex < 2) {
+                                        let pct = totalVal > 0 ? ((val / totalVal) * 100).toFixed(1) : 0;
+                                        return `${label}: ${formatNum(val)} (${pct}%)`;
+                                    } else {
+                                        return `${label}: ${formatNum(val)}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // Chart 3: 自動化率 (攔截率)
+        // ==========================================
+        function renderRateChart(labels, rate) {
+            destroyChart('rateChart');
+            const ctx = document.getElementById('rateChart').getContext('2d');
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            charts['rateChart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '攔截率 (%)', data: rate, borderColor: '#10b981', backgroundColor: gradient,
+                        borderWidth: 3, pointBackgroundColor: '#fff', pointBorderColor: '#10b981',
+                        pointRadius: 4, fill: true, tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { display: false } }, y: { beginAtZero: true, min: 0, max: 100, ticks: { callback: v => v + "%" } } },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y.toFixed(1) + '%' } } }
+                }
+            });
+        }
+
+        // ==========================================
+        // Chart 4: 戰略預測里程碑 (區分實績與預估)
+        // ==========================================
+        function renderStrategicForecastChart(labels, smart, human, total) {
+            destroyChart('forecastChart');
+            
+            const { targetLabels, targetIndices, pastCount, n } = getMilestoneNodes(labels);
+            const smartReg = linearRegression(smart);
+            const totalReg = linearRegression(total);
+
+            let smartPoints = [];
+            let humanPoints = [];
+
+            targetIndices.forEach(xIndex => {
+                let isFuture = xIndex >= n;
+                if (!isFuture) {
+                    smartPoints.push(smart[xIndex]);
+                    humanPoints.push(human[xIndex]);
+                } else {
+                    let predTotal = totalReg.intercept + (totalReg.slope * xIndex);
+                    let predSmart = smartReg.intercept + (smartReg.slope * xIndex);
+
+                    if (predTotal < 0) predTotal = 0;
+                    if (predSmart > predTotal * 0.95) predSmart = predTotal * 0.95; 
+                    if (predSmart < 0) predSmart = 0;
+                    
+                    let predHuman = predTotal - predSmart;
+                    if (predHuman < 0) predHuman = 0;
+
+                    smartPoints.push(predSmart);
+                    humanPoints.push(predHuman);
+                }
+            });
+
+            const smartActualColor = '#4f46e5';
+            const smartPredColor = '#a5b4fc';
+            const humanActualColor = '#ea580c';
+            const humanPredColor = '#fdba74';
+
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            charts['forecastChart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: targetLabels,
+                    datasets: [
+                        {
+                            label: '智能客服',
+                            data: smartPoints,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            tension: 0.1,
+                            segment: {
+                                borderDash: ctx => ctx.p0DataIndex >= (pastCount - 1) ? [5, 5] : undefined,
+                                borderColor: ctx => ctx.p0DataIndex >= (pastCount - 1) ? smartPredColor : smartActualColor,
+                            },
+                            pointBackgroundColor: targetIndices.map(i => i < n ? smartActualColor : '#fff'),
+                            pointBorderColor: targetIndices.map(i => i < n ? smartActualColor : smartPredColor)
+                        },
+                        {
+                            label: '真人客服',
+                            data: humanPoints,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            tension: 0.1,
+                            segment: {
+                                borderDash: ctx => ctx.p0DataIndex >= (pastCount - 1) ? [5, 5] : undefined,
+                                borderColor: ctx => ctx.p0DataIndex >= (pastCount - 1) ? humanPredColor : humanActualColor,
+                            },
+                            pointBackgroundColor: targetIndices.map(i => i < n ? humanActualColor : '#fff'),
+                            pointBorderColor: targetIndices.map(i => i < n ? humanActualColor : humanPredColor)
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { maxRotation: 0, font: { size: 11 } } },
+                        y: { beginAtZero: true, min: 0 }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.parsed.y;
+                                    return `${context.dataset.label}: ${formatNum(val)}`;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: pastCount - 0.5,
+                                    xMax: pastCount - 0.5,
+                                    borderColor: 'rgba(156, 163, 175, 0.4)',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5]
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateInsights(labels, rateData, smartData, humanData, friendsData, totalData) {
+            const n = labels.length;
+            const list = document.getElementById('insights-list');
+            list.innerHTML = '';
+
+            if (friendsData.length > 0) {
+                const latestFriends = friendsData[n-1];
+                const latestTotal = totalData[n-1];
+                const visitRate = ((latestTotal / latestFriends) * 100).toFixed(2);
+                let li = document.createElement('li');
+                li.innerHTML = `<strong>用戶進線轉換率 (Visit Rate)：</strong> 本月進線人數佔總好友數的 <strong>${visitRate}%</strong>。若此比例長期平穩，代表客服量上升僅是因「好友數擴大」；若此比例突然飆高，需警覺是否有異常客訴或活動行銷引發的問題。`;
+                list.appendChild(li);
+            }
+
+            const currentRate = rateData[n-1];
+            const oldRate = rateData[Math.max(0, n-6)]; 
+            let li1 = document.createElement('li');
+            li1.innerHTML = `<strong>自動化防線穩固：</strong> 近半年來，AI 攔截率從 <strong>${oldRate.toFixed(1)}%</strong> 變動至目前的 <strong>${currentRate.toFixed(1)}%</strong>，展現良好的護城河效應。`;
+            list.appendChild(li1);
+
+            let li2 = document.createElement('li');
+            li2.innerHTML = `<strong>戰略人力佈局建議：</strong> 參照上方的「戰略預測模型」，未來 5 年受惠於智能客服的高攔截率，<strong>真人客服的增長曲線已顯著平緩</strong>。建議未來增額的人事預算，可投資在「精緻化客訴處理」或「AI 知識庫訓練師」等高價值職位上。`;
+            list.appendChild(li2);
+        }
+
+        // ==========================================
+        // Data Table: 全動態抓取原始數據表
+        // ==========================================
+        function renderDataTable(labels, tableRows, rateData) {
+            const n = labels.length;
+            const startIndex = Math.max(0, n - 12); // 取最後 12 個月
+            const recentLabels = labels.slice(startIndex);
+
+            // 建立表頭 (含凍結首欄樣式 sticky left-0)
+            let theadHTML = `<tr><th class="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 bg-gray-100 sticky left-0 z-20">營運指標 \\ 時間</th>`;
+            recentLabels.forEach(label => {
+                theadHTML += `<th class="px-4 py-3 text-right font-medium text-gray-500 whitespace-nowrap">${label}</th>`;
+            });
+            theadHTML += `</tr>`;
+            document.getElementById('data-table-head').innerHTML = theadHTML;
+
+            let tbodyHTML = '';
+            
+            // 產生資料列的共用函式 (加入 rawTitle 用於傳遞給格式化函數判定)
+            const makeRow = (titleHtml, dataArr, isPercent = false, highlightTitle = false, rawTitle = "") => {
+                let titleClass = highlightTitle ? "text-[#06C755] font-bold" : "text-gray-800 font-medium";
+                let row = `<tr class="hover:bg-blue-50 transition group">
+                            <td class="px-4 py-3 ${titleClass} bg-white group-hover:bg-blue-50 whitespace-nowrap border-r border-gray-200 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">${titleHtml}</td>`;
+                dataArr.forEach(val => {
+                    let formattedVal = isPercent ? (typeof val === 'number' ? val.toFixed(1) + '%' : val) : formatNum(val, rawTitle);
+                    row += `<td class="px-4 py-3 text-right text-gray-600 whitespace-nowrap">${formattedVal}</td>`;
+                });
+                row += `</tr>`;
+                return row;
+            };
+
+            // 遍歷並渲染從 CSV 自動擷取的所有資料
+            tableRows.forEach(tr => {
+                let recentData = tr.data.slice(startIndex);
+                let highlight = tr.title.includes('好友') || tr.title.includes('粉絲');
+                let titleHtml = highlight ? `<i class="fa-brands fa-line mr-1"></i>${tr.title}` : tr.title;
+                tbodyHTML += makeRow(titleHtml, recentData, false, highlight, tr.title);
+            });
+
+            // 最後加上由程式自動算出的「AI 攔截率」
+            let recentRate = rateData.slice(startIndex);
+            tbodyHTML += makeRow('<i class="fa-solid fa-calculator text-gray-400 mr-1 text-xs"></i> AI 攔截率 (自動計算)', recentRate, true, false, 'AI 攔截率');
+
+            document.getElementById('data-table-body').innerHTML = tbodyHTML;
+        }
+
+        window.onload = fetchData;
+
+    </script>
+</body>
+</html>
