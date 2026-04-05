@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投資收益儀表板</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mom: { 50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e', 700: '#be123c', 900: '#881337' },
+                        dad: { 50: '#ecfdf5', 100: '#d1fae5', 500: '#10b981', 700: '#047857', 900: '#064e3b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .tab-btn { transition: all 0.3s ease; }
+        .chart-container { position: relative; height: 350px; width: 100%; }
+        /* 自訂滾動條 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="app" class="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 relative">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-blue-600"></i> 投資收益儀表板
+            </h1>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="flex flex-col items-center justify-center py-20">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+            <p class="text-gray-500">正在從 Google Sheets 載入最新資料...</p>
+        </div>
+
+        <!-- Main Content (Hidden until loaded) -->
+        <div id="dashboard-content" class="hidden">
+            
+            <!-- Tabs -->
+            <div class="flex rounded-xl overflow-hidden mb-6 shadow-md">
+                <button onclick="switchTab('mom')" id="tab-mom" class="tab-btn flex-1 py-4 text-xl font-bold flex items-center justify-center gap-2 bg-mom-700 text-white">
+                    <i class="fa-solid fa-user-tie"></i> 玉英 (媽媽) 的收益
+                </button>
+                <button onclick="switchTab('dad')" id="tab-dad" class="tab-btn flex-1 py-4 text-xl font-bold flex items-center justify-center gap-2 bg-gray-200 text-gray-600 hover:bg-gray-300">
+                    <i class="fa-solid fa-user-tie"></i> 文仙 (爸爸) 的收益
+                </button>
+            </div>
+
+            <!-- Dashboard Body -->
+            <div id="theme-wrapper" class="bg-white rounded-2xl shadow-lg p-4 md:p-6 border-t-8 border-mom-700 transition-colors duration-300">
+                
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 flex items-center gap-4">
+                        <div id="kpi-icon-1" class="w-16 h-16 rounded-full bg-mom-100 text-mom-700 flex items-center justify-center text-3xl">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                        <div>
+                            <p class="text-base md:text-lg text-gray-500 mb-1">最新投入本金</p>
+                            <h3 id="kpi-principal" class="text-3xl md:text-4xl font-bold text-gray-800">--</h3>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 flex items-center gap-4">
+                        <div id="kpi-icon-2" class="w-16 h-16 rounded-full bg-mom-100 text-mom-700 flex items-center justify-center text-3xl">
+                            <i class="fa-solid fa-money-bill-trend-up"></i>
+                        </div>
+                        <div>
+                            <p class="text-base md:text-lg text-gray-500 mb-1">歷年累計配息</p>
+                            <h3 id="kpi-total-dividend" class="text-3xl md:text-4xl font-bold text-gray-800">--</h3>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 flex items-center gap-4">
+                        <div id="kpi-icon-3" class="w-16 h-16 rounded-full bg-mom-100 text-mom-700 flex items-center justify-center text-3xl">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
+                        <div>
+                            <p class="text-base md:text-lg text-gray-500 mb-1">近3年平均實質利率</p>
+                            <h3 id="kpi-rate" class="text-3xl md:text-4xl font-bold text-gray-800">--</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Chart 1: Principal vs Total Dividend -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm col-span-1 lg:col-span-2">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700 text-center">歷年本金與配息成長趨勢</h3>
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Dividend Breakdown -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700 text-center">歷年配息來源分析 (2月/5月/11月)</h3>
+                        <div class="chart-container">
+                            <canvas id="breakdownChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Interest Rate Trend -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700 text-center">歷年年利率走勢</h3>
+                        <div class="chart-container">
+                            <canvas id="rateChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> 詳細收益紀錄表
+                    </h3>
+                    <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead id="table-header" class="bg-mom-700 text-white">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm md:text-base font-medium uppercase tracking-wider">年度</th>
+                                    <th class="px-4 py-3 text-right text-sm md:text-base font-medium uppercase tracking-wider">本金</th>
+                                    <th class="px-4 py-3 text-right text-sm md:text-base font-medium uppercase tracking-wider">2/1 配息</th>
+                                    <th class="px-4 py-3 text-right text-sm md:text-base font-medium uppercase tracking-wider">5/1 配息</th>
+                                    <th class="px-4 py-3 text-right text-sm md:text-base font-medium uppercase tracking-wider">11/1 配息</th>
+                                    <th class="px-4 py-3 text-right text-sm md:text-base font-medium uppercase tracking-wider">年合計</th>
+                                    <th class="px-4 py-3 text-right text-sm md:text-base font-medium uppercase tracking-wider">實質年利率</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Table rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Explanation Section -->
+                <div class="mt-8 bg-blue-50 rounded-xl p-5 border border-blue-100">
+                    <h4 class="text-lg font-bold text-blue-800 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info"></i> 📝 收益計算說明
+                    </h4>
+                    <ul class="list-disc list-inside text-base text-blue-700 space-y-2 ml-2">
+                        <li><strong>2/1配息 (保底2%)：</strong> 每年初延續前一年度本金計算2%利息。若年度中有新增投入資金，會按投入月份比例額外計算2%年息並加入。</li>
+                        <li><strong>5/1與11/1配息：</strong> 視當前資產配置與獲利情況，按比例提撥的額外固定配息。</li>
+                        <li><strong>實質年利率：</strong> 為解決「年度中投入資金會拉低帳面利率」的盲點，系統利用 2 月份配息反推「時間加權本金」來計算，更真實反映資金在投入期間的實際效益。</li>
+                        <li>表格中若有空缺，代表該月份尚未配息或無配息紀錄。</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- Database Links (Moved to bottom right) -->
+        <div class="mt-8 flex justify-end gap-2 text-sm opacity-50 hover:opacity-100 transition-opacity duration-300">
+            <a href="https://docs.google.com/spreadsheets/d/1WOX64scqVy3fezwo5BPHLxXVWjjYTm5t6K5Row9CzPw/edit?gid=0#gid=0" target="_blank" 
+               class="bg-transparent text-gray-500 hover:text-gray-700 py-1 px-2 rounded flex items-center gap-1">
+                <i class="fa-solid fa-table"></i> 編輯資料庫
+            </a>
+            <a href="https://docs.google.com/spreadsheets/d/1KZ3IUv6vbBVJtUgAhRWOabiRQ1ADPORxnBN7vgf1hz0/edit?gid=1747928222#gid=1747928222" target="_blank" 
+               class="bg-transparent text-gray-500 hover:text-gray-700 py-1 px-2 rounded flex items-center gap-1">
+                <i class="fa-solid fa-calculator"></i> 計算資料庫
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSKILBHjCGTKptR3jX5hipHX3Ziqicl4b5WKA1-io96xB-3vtoXQSree7gyvijKQd6GysVsl3Tu2Rk0/pub?gid=0&single=true&output=csv';
+        
+        // Data storage
+        let investmentData = {
+            mom: [],
+            dad: []
+        };
+        
+        let currentTab = 'mom';
+        let chartInstances = {
+            growth: null,
+            breakdown: null,
+            rate: null
+        };
+
+        // Utility: Parse number strings with commas to actual numbers
+        function parseNum(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            const cleanStr = val.toString().replace(/,/g, '').replace(/%/g, '').trim();
+            const num = parseFloat(cleanStr);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // Utility: Format number to locale string (e.g., 1,000,000)
+        function formatNum(num) {
+            return num.toLocaleString('zh-TW');
+        }
+
+        async function init() {
+            try {
+                Papa.parse(CSV_URL, {
+                    download: true,
+                    header: false,
+                    complete: function(results) {
+                        processData(results.data);
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('dashboard-content').style.display = 'block';
+                        renderDashboard();
+                    },
+                    error: function(err) {
+                        console.error("CSV Parsing Error:", err);
+                        document.getElementById('loading').innerHTML = `
+                            <div class="text-red-500 text-center">
+                                <i class="fa-solid fa-triangle-exclamation text-4xl mb-4"></i>
+                                <p>無法讀取資料，請確認 CSV 連結是否正確或有開放權限。</p>
+                            </div>
+                        `;
+                    }
+                });
+            } catch (error) {
+                console.error("Fetch Error:", error);
+            }
+        }
+
+        function processData(rows) {
+            // Based on standard Google Sheet CSV:
+            // Mom: Cols B(1) ~ H(7)
+            // Dad: Cols J(9) ~ P(15)
+            
+            investmentData.mom = [];
+            investmentData.dad = [];
+
+            // Skip early rows, look for valid years (e.g., 2019, 2020)
+            rows.forEach(row => {
+                if (row.length < 15) return; // Row too short
+
+                // Check Mom (Col B / index 1)
+                const momYear = row[1]?.trim();
+                if (/^20\d{2}$/.test(momYear)) { // Starts with 20xx
+                    let principal = parseNum(row[2]);
+                    let feb = parseNum(row[3]);
+                    let total = parseNum(row[6]);
+                    
+                    // 反推時間加權本金 (Effective Principal)
+                    let effectivePrincipal = feb > 0 ? (feb / 0.02) : principal;
+                    let realRate = effectivePrincipal > 0 ? ((total / effectivePrincipal) * 100).toFixed(2) + '%' : '0.00%';
+
+                    investmentData.mom.push({
+                        year: momYear,
+                        principal: principal,
+                        feb: feb,
+                        may: parseNum(row[4]),
+                        nov: parseNum(row[5]),
+                        total: total,
+                        rate: row[7] ? row[7].trim() : '0%', // Keep original string or format later
+                        realRate: realRate
+                    });
+                }
+
+                // Check Dad (Col J / index 9)
+                const dadYear = row[9]?.trim();
+                if (/^20\d{2}$/.test(dadYear)) {
+                    let principal = parseNum(row[10]);
+                    let feb = parseNum(row[11]);
+                    let total = parseNum(row[14]);
+                    
+                    // 反推時間加權本金 (Effective Principal)
+                    let effectivePrincipal = feb > 0 ? (feb / 0.02) : principal;
+                    let realRate = effectivePrincipal > 0 ? ((total / effectivePrincipal) * 100).toFixed(2) + '%' : '0.00%';
+
+                    investmentData.dad.push({
+                        year: dadYear,
+                        principal: principal,
+                        feb: feb,
+                        may: parseNum(row[12]),
+                        nov: parseNum(row[13]),
+                        total: total,
+                        rate: row[15] ? row[15].trim() : '0%',
+                        realRate: realRate
+                    });
+                }
+            });
+        }
+
+        function switchTab(person) {
+            currentTab = person;
+            
+            // Update Tab UI
+            const tabMom = document.getElementById('tab-mom');
+            const tabDad = document.getElementById('tab-dad');
+            const themeWrapper = document.getElementById('theme-wrapper');
+            const tableHeader = document.getElementById('table-header');
+            
+            // Icon Backgrounds
+            const icons = [document.getElementById('kpi-icon-1'), document.getElementById('kpi-icon-2'), document.getElementById('kpi-icon-3')];
+
+            if (person === 'mom') {
+                tabMom.className = "tab-btn flex-1 py-4 text-xl font-bold flex items-center justify-center gap-2 bg-mom-700 text-white shadow-inner";
+                tabDad.className = "tab-btn flex-1 py-4 text-xl font-bold flex items-center justify-center gap-2 bg-gray-200 text-gray-600 hover:bg-gray-300";
+                
+                themeWrapper.classList.remove('border-dad-700');
+                themeWrapper.classList.add('border-mom-700');
+                
+                tableHeader.classList.remove('bg-dad-700');
+                tableHeader.classList.add('bg-mom-700');
+
+                icons.forEach(i => {
+                    i.classList.remove('bg-dad-100', 'text-dad-700');
+                    i.classList.add('bg-mom-100', 'text-mom-700');
+                });
+            } else {
+                tabDad.className = "tab-btn flex-1 py-4 text-xl font-bold flex items-center justify-center gap-2 bg-dad-700 text-white shadow-inner";
+                tabMom.className = "tab-btn flex-1 py-4 text-xl font-bold flex items-center justify-center gap-2 bg-gray-200 text-gray-600 hover:bg-gray-300";
+                
+                themeWrapper.classList.remove('border-mom-700');
+                themeWrapper.classList.add('border-dad-700');
+
+                tableHeader.classList.remove('bg-mom-700');
+                tableHeader.classList.add('bg-dad-700');
+
+                icons.forEach(i => {
+                    i.classList.remove('bg-mom-100', 'text-mom-700');
+                    i.classList.add('bg-dad-100', 'text-dad-700');
+                });
+            }
+
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const data = investmentData[currentTab];
+            if (data.length === 0) return;
+
+            // 1. Update KPIs
+            const latestData = data[data.length - 1];
+            const totalDividend = data.reduce((sum, item) => sum + item.total, 0);
+
+            // Calculate 3-year average real rate (排除未發放11月配息的不完整年度)
+            const completeYears = data.filter(item => item.nov > 0);
+            const last3Data = completeYears.slice(-3); // 取最後三年的完整資料
+            const sumRates = last3Data.reduce((sum, item) => sum + parseFloat(item.realRate), 0);
+            const avg3YearRate = last3Data.length > 0 ? (sumRates / last3Data.length).toFixed(2) + '%' : '--';
+
+            // Animate numbers (simple approach)
+            document.getElementById('kpi-principal').innerText = `$ ${formatNum(latestData.principal)}`;
+            document.getElementById('kpi-total-dividend').innerText = `$ ${formatNum(totalDividend)}`;
+            document.getElementById('kpi-rate').innerText = avg3YearRate;
+
+            // 2. Update Table
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            // Reverse data to show latest first in table
+            const reversedData = [...data].reverse();
+            
+            reversedData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100';
+                tr.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg font-medium text-gray-900">${row.year}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-gray-700">${formatNum(row.principal)}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-gray-700">${row.feb > 0 ? formatNum(row.feb) : '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-gray-700">${row.may > 0 ? formatNum(row.may) : '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-blue-600 font-semibold">${row.nov > 0 ? formatNum(row.nov) : '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right font-bold text-gray-800">${formatNum(row.total)}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right font-medium ${parseFloat(row.realRate) > 4 ? 'text-green-600' : 'text-gray-700'}" title="原試算表利率: ${row.rate}">${row.realRate}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 3. Update Charts
+            updateCharts(data);
+        }
+
+        function updateCharts(data) {
+            const labels = data.map(d => d.year);
+            const themeColors = currentTab === 'mom' 
+                ? { primary: '#be123c', secondary: '#f43f5e', light: '#ffe4e6', accent: '#fb7185' } 
+                : { primary: '#047857', secondary: '#10b981', light: '#d1fae5', accent: '#34d399' };
+
+            // Chart.js Default Settings
+            Chart.defaults.font.family = "'Segoe UI', sans-serif";
+            Chart.defaults.color = '#6b7280';
+            Chart.defaults.font.size = 14; // 全局放大圖表字體
+
+            // --- Chart 1: Growth (Mixed Chart) ---
+            if (chartInstances.growth) chartInstances.growth.destroy();
+            const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+            chartInstances.growth = new Chart(ctxGrowth, {
+                type: 'bar',
+                plugins: [ChartDataLabels], // 引入標籤外掛
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '年總配息 (右軸)',
+                            type: 'line',
+                            data: data.map(d => d.total),
+                            borderColor: '#f59e0b', // Amber
+                            backgroundColor: '#f59e0b',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#f59e0b',
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.3,
+                            yAxisID: 'y1',
+                            datalabels: {
+                                align: 'top',
+                                anchor: 'end',
+                                offset: 4,
+                                color: '#b45309', // 深橘色以利閱讀
+                                font: { weight: 'bold', size: 14 }, // 放大標籤字體
+                                formatter: value => '$' + formatNum(value) // 格式化為金錢格式
+                            }
+                        },
+                        {
+                            label: '投入本金 (左軸)',
+                            data: data.map(d => d.principal),
+                            backgroundColor: themeColors.light,
+                            borderColor: themeColors.primary,
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'y',
+                            datalabels: { display: false } // 本金長條圖不顯示數字標籤
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $ ' + formatNum(context.raw);
+                                }
+                            }
+                        },
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '本金金額 ($)' },
+                            ticks: { callback: value => '$' + (value / 10000) + '萬' } // Show in Ten Thousands
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '配息金額 ($)' },
+                            grid: { drawOnChartArea: false },
+                            ticks: { callback: value => '$' + formatNum(value) },
+                            grace: '20%' // 增加上方顯示空間以免標籤被切掉
+                        }
+                    }
+                }
+            });
+
+            // --- Chart 2: Breakdown (Stacked Bar) ---
+            if (chartInstances.breakdown) chartInstances.breakdown.destroy();
+            const ctxBreakdown = document.getElementById('breakdownChart').getContext('2d');
+            chartInstances.breakdown = new Chart(ctxBreakdown, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: '2/1 配息', data: data.map(d => d.feb), backgroundColor: themeColors.light },
+                        { label: '5/1 配息', data: data.map(d => d.may), backgroundColor: themeColors.accent },
+                        { label: '11/1 配息', data: data.map(d => d.nov), backgroundColor: themeColors.primary }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $ ' + formatNum(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { 
+                            stacked: true,
+                            ticks: { callback: value => '$' + formatNum(value) }
+                        }
+                    }
+                }
+            });
+
+            // --- Chart 3: Rate Trend (Line) ---
+            if (chartInstances.rate) chartInstances.rate.destroy();
+            const ctxRate = document.getElementById('rateChart').getContext('2d');
+            const rateData = data.map(d => parseNum(d.realRate)); // 改用實質利率畫圖
+            
+            // Calculate Average for reference line
+            const avgRate = rateData.reduce((a, b) => a + b, 0) / rateData.length;
+
+            chartInstances.rate = new Chart(ctxRate, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '年利率 (%)',
+                        data: rateData,
+                        borderColor: '#3b82f6', // Blue
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#3b82f6',
+                        pointRadius: 5,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        },
+                        annotation: {
+                            // If chartjs-plugin-annotation is added later, can draw avg line
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Boot up
+        window.onload = init;
+
+    </script>
+</body>
+</html>
