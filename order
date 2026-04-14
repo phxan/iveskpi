@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司下午茶訂購表單</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 自訂一些簡單的動畫效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-amber-50 min-h-screen font-sans text-gray-800">
+
+    <div class="max-w-xl mx-auto pt-10 pb-20 px-4 sm:px-6 lg:px-8">
+        
+        <!-- 表單標題區塊 -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-200 mb-4 text-amber-700 text-3xl shadow-sm">
+                <i class="fa-solid fa-mug-hot"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">04/17(五) 歡樂下午茶時光</h1>
+            <p class="text-gray-600">請填寫您的全名與餐點搭配，慰勞一下辛苦的自己吧！<br>
+            <span class="text-amber-600 font-medium text-sm">（若真的沒有想法也可以棄填，將由小助理協助搭配唷~）</span></p>
+        </div>
+
+        <!-- 熱門排行榜區塊 (新增) -->
+        <div id="leaderboard" class="bg-amber-100/50 rounded-2xl p-6 mb-8 hidden fade-in border border-amber-200">
+            <h3 class="text-lg font-bold text-amber-800 mb-3 flex items-center">
+                <i class="fa-solid fa-fire text-red-500 mr-2"></i> 目前大家都在點什麼？
+            </h3>
+            <ul id="popularList" class="space-y-2 text-sm text-gray-700">
+                <li><i class="fa-solid fa-spinner fa-spin mr-2"></i>資料載入中...</li>
+            </ul>
+        </div>
+
+        <!-- 表單區塊 -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden fade-in">
+            <div class="p-6 sm:p-8">
+                <form id="orderForm" class="space-y-6">
+                    
+                    <!-- 姓名填寫 -->
+                    <div>
+                        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                            您的全名 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="name" name="name" required placeholder="例如：王小明"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition-colors">
+                        <p class="text-xs text-red-500 mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>請務必填寫正確，否則無法客制化餐點</p>
+                    </div>
+
+                    <!-- 主餐選擇 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            主餐選項 (請擇一) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="main_meal" value="酥脆香雞排" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <span class="ml-3 font-medium">酥脆香雞排</span>
+                            </label>
+                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="main_meal" value="水果綜合鬆餅" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <span class="ml-3 font-medium">水果綜合鬆餅</span>
+                            </label>
+                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="main_meal" value="夏威夷個人披薩" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <span class="ml-3 font-medium">夏威夷個人披薩</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 副餐選擇 (預留選項，可隨時更改) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            副餐/飲料選項 (請擇一) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="side_dish" value="經典冰紅茶 (微糖少冰)" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <span class="ml-3 font-medium">經典冰紅茶 (微糖少冰)</span>
+                            </label>
+                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="side_dish" value="錫蘭熱奶茶" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <span class="ml-3 font-medium">錫蘭熱奶茶</span>
+                            </label>
+                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="side_dish" value="綜合水果切盤" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <span class="ml-3 font-medium">綜合水果切盤</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 提交按鈕 -->
+                    <div class="pt-4">
+                        <button type="submit" id="submitBtn" 
+                            class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all flex justify-center items-center">
+                            <span>確認送出</span>
+                            <i id="loadingIcon" class="fa-solid fa-spinner fa-spin ml-2 hidden"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 成功訊息提示 (預設隱藏) -->
+                <div id="successMsg" class="hidden mt-6 bg-green-50 border border-green-200 text-green-700 px-4 py-4 rounded-lg flex items-start">
+                    <i class="fa-solid fa-circle-check text-green-500 mt-1 mr-3 text-lg"></i>
+                    <div class="w-full">
+                        <h4 class="font-bold mb-2">訂單已成功送出！</h4>
+                        
+                        <!-- 新增：顯示填寫結果的區塊 -->
+                        <div class="bg-white/70 p-3 rounded border border-green-200 text-sm mb-3">
+                            <p class="mb-1"><span class="font-semibold text-green-800">登記姓名：</span> <span id="resultName" class="text-gray-800"></span></p>
+                            <p class="mb-1"><span class="font-semibold text-green-800">選擇主餐：</span> <span id="resultMain" class="text-gray-800"></span></p>
+                            <p><span class="font-semibold text-green-800">選擇副餐：</span> <span id="resultSide" class="text-gray-800"></span></p>
+                        </div>
+                        
+                        <!-- 新增：重填提示文字 -->
+                        <p class="text-sm text-gray-600 mb-3 bg-amber-50 p-2 rounded border border-amber-200">
+                            <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i>
+                            <strong>若反悔請重填表單</strong>，系統將以結單前您的最後一次填寫紀錄為主。
+                        </p>
+
+                        <button id="resetBtn" class="text-sm text-green-600 underline font-medium hover:text-green-800">
+                            點此重新填寫
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 錯誤訊息提示 (預設隱藏) -->
+                <div id="errorMsg" class="hidden mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-lg flex items-start">
+                    <i class="fa-solid fa-circle-exclamation text-red-500 mt-1 mr-3 text-lg"></i>
+                    <div>
+                        <h4 class="font-bold">發生錯誤</h4>
+                        <p class="text-sm mt-1">無法連線到資料庫，請確認 Google Apps Script 網址是否正確設定，或是稍後再試。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 【請注意】您需要將下方這串網址替換成您 Google Apps Script 部署後的「網頁應用程式網址」
+        // =========================================================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXUCCMEsXSiTqWimlr288YLdgw48OuPRXEsFavx1BOKNxt3hrM5ApfR1uR-_ts4_KO/exec';
+        
+        const form = document.getElementById('orderForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingIcon = document.getElementById('loadingIcon');
+        const successMsg = document.getElementById('successMsg');
+        const errorMsg = document.getElementById('errorMsg');
+        const resetBtn = document.getElementById('resetBtn');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault(); // 防止網頁重新載入
+            
+            // 檢查是否已更換網址
+            if(SCRIPT_URL.includes('請替換成您的網址')) {
+                alert("開發者提醒：請先前往程式碼中將 SCRIPT_URL 替換為您的 Google Apps Script 網址！\n(請參考設定教學檔)");
+                return;
+            }
+
+            // 鎖定按鈕，顯示載入動畫
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            loadingIcon.classList.remove('hidden');
+            successMsg.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+
+            // 收集表單資料
+            const formData = new FormData(form);
+
+            // 提取剛填寫的資料，準備顯示在成功畫面上
+            const submittedName = formData.get('name');
+            const submittedMain = formData.get('main_meal');
+            const submittedSide = formData.get('side_dish');
+
+            // 發送請求到 Google Sheet
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                // 將資料填入成功畫面中對應的欄位
+                document.getElementById('resultName').textContent = submittedName;
+                document.getElementById('resultMain').textContent = submittedMain;
+                document.getElementById('resultSide').textContent = submittedSide;
+
+                // 無論成功與否，GAS 預設都會回傳成功 (除非發生網路中斷)
+                form.reset();
+                form.classList.add('hidden');
+                successMsg.classList.remove('hidden');
+                successMsg.classList.add('fade-in');
+                
+                // 送出成功後，延遲 2 秒鐘自動重新抓取排行榜 (讓 Google Sheet 有時間寫入)
+                setTimeout(fetchPopularity, 2000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMsg.classList.remove('hidden');
+            })
+            .finally(() => {
+                // 恢復按鈕狀態
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                loadingIcon.classList.add('hidden');
+            });
+        });
+
+        // 重新填寫表單邏輯
+        resetBtn.addEventListener('click', () => {
+            successMsg.classList.add('hidden');
+            form.classList.remove('hidden');
+            form.classList.add('fade-in');
+        });
+
+        // =========================================================================
+        // 新增功能 1：主餐與副餐連動限制 (預算控制)
+        // =========================================================================
+        // 您可以依照未來的實際菜單，隨時在此處修改對應關係 (已改為完整名稱)
+        const menuRules = {
+            "酥脆香雞排": ["經典冰紅茶 (微糖少冰)", "錫蘭熱奶茶"],          
+            "水果綜合鬆餅": ["錫蘭熱奶茶", "綜合水果切盤"],     
+            "夏威夷個人披薩": ["經典冰紅茶 (微糖少冰)", "綜合水果切盤"]      
+        };
+
+        const mainMealInputs = document.querySelectorAll('input[name="main_meal"]');
+        const sideDishInputs = document.querySelectorAll('input[name="side_dish"]');
+
+        mainMealInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const selectedMain = e.target.value;
+                const allowedSides = menuRules[selectedMain] || [];
+
+                sideDishInputs.forEach(sideInput => {
+                    const label = sideInput.closest('label');
+                    if (allowedSides.includes(sideInput.value)) {
+                        label.style.display = 'flex'; // 顯示在預算內的副餐
+                    } else {
+                        label.style.display = 'none'; // 隱藏超出預算/不搭配的副餐
+                        if (sideInput.checked) sideInput.checked = false; // 若原本有選到該副餐則取消勾選
+                    }
+                });
+            });
+        });
+
+        // =========================================================================
+        // 新增功能 2：讀取 CSV 產生排行榜
+        // =========================================================================
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5JLQGfuMJtXbYzQ2NmPxEgE3GFZ_6cvS4Y0m6TFHJbaYfVDeDX9srWpY6JHi9l4JJz285qNSbXx4q/pub?gid=0&single=true&output=csv';
+        
+        // 簡單的 CSV 單行解析器 (避免姓名中有逗號造成格式跑掉)
+        function parseCsvLine(text) {
+            let ret = [], col = '', inQuote = false;
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                if (c === '"') inQuote = !inQuote;
+                else if (c === ',' && !inQuote) { ret.push(col); col = ''; }
+                else col += c;
+            }
+            ret.push(col);
+            return ret.map(s => s.replace(/^"|"$/g, '').trim());
+        }
+
+        async function fetchPopularity() {
+            try {
+                // 加上時間戳記，強迫瀏覽器不要使用舊的快取資料
+                const noCacheUrl = csvUrl + '&_t=' + new Date().getTime();
+                const response = await fetch(noCacheUrl);
+                const text = await response.text();
+                const lines = text.split(/\r?\n/);
+                
+                const combos = {};
+                const mainCounts = {};
+                
+                // 從第二行開始讀取 (略過標題列)
+                for(let i = 1; i < lines.length; i++) {
+                    if(!lines[i].trim()) continue;
+                    const cols = parseCsvLine(lines[i]);
+                    
+                    if(cols.length >= 4) {
+                        const main = cols[2]; // C欄為主餐
+                        const side = cols[3]; // D欄為副餐
+                        
+                        const combo = `${main} + ${side}`;
+                        
+                        combos[combo] = (combos[combo] || 0) + 1;
+                        mainCounts[main] = (mainCounts[main] || 0) + 1;
+                    }
+                }
+
+                // 依照選擇人數將組合排序
+                const sortedCombos = Object.entries(combos).sort((a, b) => b[1] - a[1]);
+                const popularList = document.getElementById('popularList');
+                const leaderboard = document.getElementById('leaderboard');
+                
+                if(sortedCombos.length > 0) {
+                    popularList.innerHTML = '';
+                    // 顯示前 3 名熱門組合
+                    sortedCombos.slice(0, 3).forEach((item, index) => {
+                        const li = document.createElement('li');
+                        li.className = 'flex justify-between items-center bg-white/60 px-3 py-2 rounded shadow-sm';
+                        li.innerHTML = `<span><span class="font-bold text-amber-600 mr-2">Top ${index + 1}</span> ${item[0]}</span> <span class="bg-amber-200 text-amber-800 text-xs px-2 py-1 rounded-full">${item[1]} 人</span>`;
+                        popularList.appendChild(li);
+                    });
+                    
+                    leaderboard.classList.remove('hidden');
+
+                    // 把數量標記在主選項旁邊，給選擇障礙的人參考
+                    mainMealInputs.forEach(input => {
+                        const count = mainCounts[input.value] || 0;
+                        if(count > 0) {
+                            const span = input.nextElementSibling;
+                            if(!span.innerHTML.includes('🔥')) {
+                                span.innerHTML += ` <span class="text-xs text-red-500 font-bold ml-2">(🔥 ${count}人選)</span>`;
+                            }
+                        }
+                    });
+                } else {
+                    popularList.innerHTML = '<li class="text-gray-500">目前還沒有人填寫，搶頭香吧！</li>';
+                    leaderboard.classList.remove('hidden');
+                }
+                
+            } catch(error) {
+                console.error("無法載入排行榜資料:", error);
+                // 若載入失敗則靜默處理，不影響正常表單填寫
+            }
+        }
+
+        // 載入網頁時自動抓取並顯示資料
+        fetchPopularity();
+    </script>
+</body>
+</html>
