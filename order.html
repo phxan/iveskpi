@@ -31,7 +31,7 @@
             <span class="text-amber-600 font-medium text-sm">（若真的沒有想法也可以棄填，將由小助理協助搭配唷~）</span></p>
         </div>
 
-        <!-- 熱門排行榜區塊 (新增) -->
+        <!-- 熱門排行榜區塊 -->
         <div id="leaderboard" class="bg-amber-100/50 rounded-2xl p-6 mb-8 hidden fade-in border border-amber-200">
             <h3 class="text-lg font-bold text-amber-800 mb-3 flex items-center">
                 <i class="fa-solid fa-fire text-red-500 mr-2"></i> 目前大家都在點什麼？
@@ -56,45 +56,110 @@
                         <p class="text-xs text-red-500 mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>請務必填寫正確，否則無法提供客製化餐點</p>
                     </div>
 
-                    <!-- 主餐選擇 -->
+                    <!-- A區：主餐選擇 -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-3">
-                            主餐選項 (請擇一) <span class="text-red-500">*</span>
+                            A區：主餐選項 (請擇一) <span class="text-red-500">*</span>
                         </label>
                         <div class="space-y-3">
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="main_meal" value="酥脆香雞排" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                <span class="ml-3 font-medium">酥脆香雞排</span>
+                            <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="main_meal" value="三年愛班 豆花黑白配冰沙" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3">
+                                    <span class="flex items-center flex-wrap gap-1.5 font-medium">
+                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded shadow-sm border border-blue-200">三年愛班</span>
+                                        <span>豆花黑白配冰沙</span>
+                                        <i class="fa-solid fa-bowl-food text-blue-500"></i>
+                                        <span class="fire-badge"></span>
+                                    </span>
+                                    <span class="block text-sm text-gray-500 mt-1">豆花 + 牛奶冰沙及黑糖冰沙</span>
+                                </div>
                             </label>
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="main_meal" value="水果綜合鬆餅" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                <span class="ml-3 font-medium">水果綜合鬆餅</span>
+                            <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="main_meal" value="三年愛班 雙黑白配冰沙" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3">
+                                    <span class="flex items-center flex-wrap gap-1.5 font-medium">
+                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded shadow-sm border border-blue-200">三年愛班</span>
+                                        <span>雙黑白配冰沙</span>
+                                        <i class="fa-solid fa-ice-cream text-pink-500"></i>
+                                        <span class="fire-badge"></span>
+                                    </span>
+                                    <span class="block text-sm text-gray-500 mt-1">仙草凍 + 豆花 + 牛奶冰沙及黑糖冰沙</span>
+                                </div>
                             </label>
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="main_meal" value="夏威夷個人披薩" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                <span class="ml-3 font-medium">夏威夷個人披薩</span>
+                            <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="main_meal" value="三年愛班 仙草凍黑白配冰沙" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3">
+                                    <span class="flex items-center flex-wrap gap-1.5 font-medium">
+                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded shadow-sm border border-blue-200">三年愛班</span>
+                                        <span>仙草凍黑白配冰沙</span>
+                                        <i class="fa-solid fa-mug-hot text-emerald-600"></i>
+                                        <span class="fire-badge"></span>
+                                    </span>
+                                    <span class="block text-sm text-gray-500 mt-1">仙草凍 + 牛奶冰沙及黑糖冰沙</span>
+                                </div>
+                            </label>
+                            <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="main_meal" value="陳Q 香雞排" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3">
+                                    <span class="flex items-center flex-wrap gap-1.5 font-medium">
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">陳Q</span>
+                                        <span>香雞排</span>
+                                        <i class="fa-solid fa-drumstick-bite text-orange-500"></i>
+                                        <span class="fire-badge"></span>
+                                    </span>
+                                </div>
                             </label>
                         </div>
                     </div>
 
-                    <!-- 副餐選擇 (預留選項，可隨時更改) -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-3">
-                            副餐/飲料選項 (請擇一) <span class="text-red-500">*</span>
-                        </label>
-                        <div class="space-y-3">
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="side_dish" value="經典冰紅茶 (微糖少冰)" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                <span class="ml-3 font-medium">經典冰紅茶 (微糖少冰)</span>
+                    <!-- B區：冰沙配料與點心 (動態顯示) -->
+                    <div id="sideOptionsContainer" class="hidden space-y-6 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+                        <!-- 配料選擇 -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                冰沙配料 (請擇一) <span class="text-red-500">*</span>
                             </label>
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="side_dish" value="錫蘭熱奶茶" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                <span class="ml-3 font-medium">錫蘭熱奶茶</span>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                    <input type="radio" name="toppings_radio" value="黑糖粉粿、芋圓、花生" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                    <div class="ml-3 font-medium flex items-center gap-2">
+                                        <i class="fa-solid fa-cubes-stacked text-amber-600"></i>
+                                        <span>黑糖粉粿、芋圓、花生</span>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                    <input type="radio" name="toppings_radio" value="黑糖粉粿、紅豆、花生" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                    <div class="ml-3 font-medium flex items-center gap-2">
+                                        <i class="fa-solid fa-spoon text-amber-700"></i>
+                                        <span>黑糖粉粿、紅豆、花生</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 點心選擇 -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                                B區：點心選項 (請擇一) <span class="text-red-500">*</span>
                             </label>
-                            <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="side_dish" value="綜合水果切盤" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                <span class="ml-3 font-medium">綜合水果切盤</span>
-                            </label>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                    <input type="radio" name="snack_radio" value="陳Q 炸甜不辣" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                    <div class="ml-3 font-medium flex items-center flex-wrap gap-1.5">
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">陳Q</span>
+                                        <span>炸甜不辣</span>
+                                        <i class="fa-solid fa-fire text-red-500"></i>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                    <input type="radio" name="snack_radio" value="初一 紅豆餅" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                    <div class="ml-3 font-medium flex items-center flex-wrap gap-1.5">
+                                        <span class="px-2 py-0.5 bg-rose-100 text-rose-800 text-xs rounded shadow-sm border border-rose-200">初一</span>
+                                        <span>紅豆餅</span>
+                                        <i class="fa-solid fa-cookie text-amber-700"></i>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -108,20 +173,22 @@
                     </div>
                 </form>
 
-                <!-- 成功訊息提示 (預設隱藏) -->
+                <!-- 【終極必殺技】隱藏的 IFrame，用來偷偷接收 Google 的回應，避開安全阻擋 -->
+                <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+                <!-- 成功訊息提示 -->
                 <div id="successMsg" class="hidden mt-6 bg-green-50 border border-green-200 text-green-700 px-4 py-4 rounded-lg flex items-start">
                     <i class="fa-solid fa-circle-check text-green-500 mt-1 mr-3 text-lg"></i>
                     <div class="w-full">
                         <h4 class="font-bold mb-2">訂單已成功送出！</h4>
                         
-                        <!-- 新增：顯示填寫結果的區塊 -->
                         <div class="bg-white/70 p-3 rounded border border-green-200 text-sm mb-3">
                             <p class="mb-1"><span class="font-semibold text-green-800">登記姓名：</span> <span id="resultName" class="text-gray-800"></span></p>
                             <p class="mb-1"><span class="font-semibold text-green-800">選擇主餐：</span> <span id="resultMain" class="text-gray-800"></span></p>
-                            <p><span class="font-semibold text-green-800">選擇副餐：</span> <span id="resultSide" class="text-gray-800"></span></p>
+                            <p class="mb-1"><span class="font-semibold text-green-800">冰沙配料：</span> <span id="resultToppings" class="text-gray-800"></span></p>
+                            <p><span class="font-semibold text-green-800">搭配點心：</span> <span id="resultSnack" class="text-gray-800"></span></p>
                         </div>
                         
-                        <!-- 新增：重填提示文字 -->
                         <p class="text-sm text-gray-600 mb-3 bg-amber-50 p-2 rounded border border-amber-200">
                             <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i>
                             <strong>若反悔請重填表單</strong>，系統將以結單前您的最後一次填寫紀錄為主。
@@ -133,12 +200,12 @@
                     </div>
                 </div>
                 
-                <!-- 錯誤訊息提示 (預設隱藏) -->
+                <!-- 錯誤訊息提示 -->
                 <div id="errorMsg" class="hidden mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-lg flex items-start">
                     <i class="fa-solid fa-circle-exclamation text-red-500 mt-1 mr-3 text-lg"></i>
                     <div>
-                        <h4 class="font-bold">發生錯誤</h4>
-                        <p class="text-sm mt-1">無法連線到資料庫，請確認 Google Apps Script 網址是否正確設定，或是稍後再試。</p>
+                        <h4 class="font-bold">連線發生錯誤</h4>
+                        <p class="text-sm mt-1 mb-2">無法將資料送到 Google Sheet。如果您是在「預覽視窗」中測試，請將檔案存到電腦後，直接用瀏覽器開啟再試一次。</p>
                     </div>
                 </div>
             </div>
@@ -146,9 +213,6 @@
     </div>
 
     <script>
-        // =========================================================================
-        // 【請注意】您需要將下方這串網址替換成您 Google Apps Script 部署後的「網頁應用程式網址」
-        // =========================================================================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXUCCMEsXSiTqWimlr288YLdgw48OuPRXEsFavx1BOKNxt3hrM5ApfR1uR-_ts4_KO/exec';
         
         const form = document.getElementById('orderForm');
@@ -158,105 +222,112 @@
         const errorMsg = document.getElementById('errorMsg');
         const resetBtn = document.getElementById('resetBtn');
 
-        form.addEventListener('submit', (e) => {
-            e.preventDefault(); // 防止網頁重新載入
-            
-            // 檢查是否已更換網址
-            if(SCRIPT_URL.includes('請替換成您的網址')) {
-                alert("開發者提醒：請先前往程式碼中將 SCRIPT_URL 替換為您的 Google Apps Script 網址！\n(請參考設定教學檔)");
-                return;
-            }
+        // 設定表單的傳統送出路徑與目標為隱藏的 iframe
+        form.action = SCRIPT_URL;
+        form.method = 'POST';
+        form.target = 'hidden_iframe';
 
-            // 鎖定按鈕，顯示載入動畫
+        let isSubmitting = false;
+
+        form.addEventListener('submit', (e) => {
+            
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
             loadingIcon.classList.remove('hidden');
             successMsg.classList.add('hidden');
             errorMsg.classList.add('hidden');
 
-            // 收集表單資料
-            const formData = new FormData(form);
+            const selectedMain = document.querySelector('input[name="main_meal"]:checked').value;
+            let finalToppings = "無";
+            let finalSnack = "無";
 
-            // 提取剛填寫的資料，準備顯示在成功畫面上
-            const submittedName = formData.get('name');
-            const submittedMain = formData.get('main_meal');
-            const submittedSide = formData.get('side_dish');
+            if (selectedMain !== "陳Q 香雞排") {
+                finalToppings = document.querySelector('input[name="toppings_radio"]:checked').value;
+                finalSnack = document.querySelector('input[name="snack_radio"]:checked').value;
+            }
 
-            // 發送請求到 Google Sheet
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                // 將資料填入成功畫面中對應的欄位
-                document.getElementById('resultName').textContent = submittedName;
-                document.getElementById('resultMain').textContent = submittedMain;
-                document.getElementById('resultSide').textContent = submittedSide;
+            // 動態建立隱藏 input 傳送配料與點心 (對應 GAS 裡的 toppings 與 snack 變數)
+            let hiddenToppings = document.getElementById('hiddenToppings');
+            if (!hiddenToppings) {
+                hiddenToppings = document.createElement('input');
+                hiddenToppings.type = 'hidden';
+                hiddenToppings.id = 'hiddenToppings';
+                hiddenToppings.name = 'toppings';
+                form.appendChild(hiddenToppings);
+            }
+            hiddenToppings.value = finalToppings;
 
-                // 無論成功與否，GAS 預設都會回傳成功 (除非發生網路中斷)
+            let hiddenSnack = document.getElementById('hiddenSnack');
+            if (!hiddenSnack) {
+                hiddenSnack = document.createElement('input');
+                hiddenSnack.type = 'hidden';
+                hiddenSnack.id = 'hiddenSnack';
+                hiddenSnack.name = 'snack';
+                form.appendChild(hiddenSnack);
+            }
+            hiddenSnack.value = finalSnack;
+
+            // 暫存資料，等一下顯示在成功畫面上
+            window.submittedName = document.getElementById('name').value;
+            window.submittedMain = selectedMain;
+            window.submittedToppings = finalToppings;
+            window.submittedSnack = finalSnack;
+
+            isSubmitting = true;
+            // 表單會自動往 hidden_iframe 送出
+        });
+
+        // 監聽 iframe 的載入完成事件 (代表資料已經送到 Google)
+        document.getElementById('hidden_iframe').addEventListener('load', function() {
+            if (isSubmitting) {
+                isSubmitting = false;
+                
+                document.getElementById('resultName').textContent = window.submittedName;
+                document.getElementById('resultMain').textContent = window.submittedMain;
+                document.getElementById('resultToppings').textContent = window.submittedToppings;
+                document.getElementById('resultSnack').textContent = window.submittedSnack;
+
                 form.reset();
                 form.classList.add('hidden');
                 successMsg.classList.remove('hidden');
                 successMsg.classList.add('fade-in');
                 
-                // 送出成功後，延遲 2 秒鐘自動重新抓取排行榜 (讓 Google Sheet 有時間寫入)
                 setTimeout(fetchPopularity, 2000);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                errorMsg.classList.remove('hidden');
-            })
-            .finally(() => {
-                // 恢復按鈕狀態
+
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
                 loadingIcon.classList.add('hidden');
-            });
+            }
         });
 
-        // 重新填寫表單邏輯
         resetBtn.addEventListener('click', () => {
             successMsg.classList.add('hidden');
             form.classList.remove('hidden');
             form.classList.add('fade-in');
         });
 
-        // =========================================================================
-        // 新增功能 1：主餐與副餐連動限制 (預算控制)
-        // =========================================================================
-        // 您可以依照未來的實際菜單，隨時在此處修改對應關係 (已改為完整名稱)
-        const menuRules = {
-            "酥脆香雞排": ["經典冰紅茶 (微糖少冰)", "錫蘭熱奶茶"],          
-            "水果綜合鬆餅": ["錫蘭熱奶茶", "綜合水果切盤"],     
-            "夏威夷個人披薩": ["經典冰紅茶 (微糖少冰)", "綜合水果切盤"]      
-        };
-
         const mainMealInputs = document.querySelectorAll('input[name="main_meal"]');
-        const sideDishInputs = document.querySelectorAll('input[name="side_dish"]');
+        const sideOptionsContainer = document.getElementById('sideOptionsContainer');
+        const toppingInputs = document.querySelectorAll('input[name="toppings_radio"]');
+        const snackInputs = document.querySelectorAll('input[name="snack_radio"]');
 
         mainMealInputs.forEach(input => {
             input.addEventListener('change', (e) => {
                 const selectedMain = e.target.value;
-                const allowedSides = menuRules[selectedMain] || [];
-
-                sideDishInputs.forEach(sideInput => {
-                    const label = sideInput.closest('label');
-                    if (allowedSides.includes(sideInput.value)) {
-                        label.style.display = 'flex'; // 顯示在預算內的副餐
-                    } else {
-                        label.style.display = 'none'; // 隱藏超出預算/不搭配的副餐
-                        if (sideInput.checked) sideInput.checked = false; // 若原本有選到該副餐則取消勾選
-                    }
-                });
+                if (selectedMain === "陳Q 香雞排") {
+                    sideOptionsContainer.classList.add('hidden');
+                    toppingInputs.forEach(i => { i.required = false; i.checked = false; });
+                    snackInputs.forEach(i => { i.required = false; i.checked = false; });
+                } else {
+                    sideOptionsContainer.classList.remove('hidden');
+                    toppingInputs.forEach(i => i.required = true);
+                    snackInputs.forEach(i => i.required = true);
+                }
             });
         });
 
-        // =========================================================================
-        // 新增功能 2：讀取 CSV 產生排行榜
-        // =========================================================================
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5JLQGfuMJtXbYzQ2NmPxEgE3GFZ_6cvS4Y0m6TFHJbaYfVDeDX9srWpY6JHi9l4JJz285qNSbXx4q/pub?gid=0&single=true&output=csv';
         
-        // 簡單的 CSV 單行解析器 (避免姓名中有逗號造成格式跑掉)
         function parseCsvLine(text) {
             let ret = [], col = '', inQuote = false;
             for (let i = 0; i < text.length; i++) {
@@ -271,7 +342,6 @@
 
         async function fetchPopularity() {
             try {
-                // 加上時間戳記，強迫瀏覽器不要使用舊的快取資料
                 const noCacheUrl = csvUrl + '&_t=' + new Date().getTime();
                 const response = await fetch(noCacheUrl);
                 const text = await response.text();
@@ -280,30 +350,39 @@
                 const combos = {};
                 const mainCounts = {};
                 
-                // 從第二行開始讀取 (略過標題列)
                 for(let i = 1; i < lines.length; i++) {
                     if(!lines[i].trim()) continue;
                     const cols = parseCsvLine(lines[i]);
                     
                     if(cols.length >= 4) {
-                        const main = cols[2]; // C欄為主餐
-                        const side = cols[3]; // D欄為副餐
+                        const main = cols[2]; 
+                        const toppings = cols[3] || "無";
+                        const snack = cols[4] || "無"; 
                         
-                        const combo = `${main} + ${side}`;
+                        let combo = main;
+                        
+                        // 為了相容您先前的舊資料 (合併在同一欄的字串) 做安全檢查
+                        if (toppings !== "無" && !toppings.includes("配料:")) {
+                            combo += ` + ${toppings}`;
+                        } else if (toppings.includes("配料:")) {
+                            combo += ` + ${toppings}`; // 舊版格式直接接上
+                        }
+
+                        if (snack !== "無") {
+                            combo += ` + ${snack}`;
+                        }
                         
                         combos[combo] = (combos[combo] || 0) + 1;
                         mainCounts[main] = (mainCounts[main] || 0) + 1;
                     }
                 }
 
-                // 依照選擇人數將組合排序
                 const sortedCombos = Object.entries(combos).sort((a, b) => b[1] - a[1]);
                 const popularList = document.getElementById('popularList');
                 const leaderboard = document.getElementById('leaderboard');
                 
                 if(sortedCombos.length > 0) {
                     popularList.innerHTML = '';
-                    // 顯示前 3 名熱門組合
                     sortedCombos.slice(0, 3).forEach((item, index) => {
                         const li = document.createElement('li');
                         li.className = 'flex justify-between items-center bg-white/60 px-3 py-2 rounded shadow-sm';
@@ -313,13 +392,13 @@
                     
                     leaderboard.classList.remove('hidden');
 
-                    // 把數量標記在主選項旁邊，給選擇障礙的人參考
                     mainMealInputs.forEach(input => {
                         const count = mainCounts[input.value] || 0;
                         if(count > 0) {
-                            const span = input.nextElementSibling;
-                            if(!span.innerHTML.includes('🔥')) {
-                                span.innerHTML += ` <span class="text-xs text-red-500 font-bold ml-2">(🔥 ${count}人選)</span>`;
+                            const label = input.closest('label');
+                            const badge = label.querySelector('.fire-badge');
+                            if(badge && !badge.innerHTML.includes('🔥')) {
+                                badge.innerHTML = `<span class="text-xs text-red-500 font-bold ml-2">(🔥 ${count}人選)</span>`;
                             }
                         }
                     });
@@ -330,11 +409,9 @@
                 
             } catch(error) {
                 console.error("無法載入排行榜資料:", error);
-                // 若載入失敗則靜默處理，不影響正常表單填寫
             }
         }
 
-        // 載入網頁時自動抓取並顯示資料
         fetchPopularity();
     </script>
 </body>
