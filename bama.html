@@ -379,7 +379,7 @@
                     <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-gray-700">${formatNum(row.principal)}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-gray-700">${row.feb > 0 ? formatNum(row.feb) : '-'}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-gray-700">${row.may > 0 ? formatNum(row.may) : '-'}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-blue-600 font-semibold">${row.nov > 0 ? formatNum(row.nov) : '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right text-gray-700">${row.nov > 0 ? formatNum(row.nov) : '-'}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right font-bold text-gray-800">${formatNum(row.total)}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-base md:text-lg text-right font-medium ${parseFloat(row.realRate) > 4 ? 'text-green-600' : 'text-gray-700'}" title="原試算表利率: ${row.rate}">${row.realRate}</td>
                 `;
