@@ -97,6 +97,9 @@
                 <p id="header-update-time" class="text-xs text-slate-400 mt-1"></p>
             </div>
             <div class="flex items-center gap-3">
+                <a href="https://gemini.google.com/app/e14d8053cb732c5d?hl=zh-TW" target="_blank" class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 border border-slate-700 transition-colors" title="修改程式">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i> 修改程式
+                </a>
                 <a href="https://docs.google.com/spreadsheets/d/1EaRA6z7EbstpQxfvQF74IoQOUmhrCNowUyy4ax3WUbc/edit?gid=1074499139#gid=1074499139" target="_blank" class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 border border-slate-700 transition-colors">
                     <i data-lucide="external-link" class="w-4 h-4"></i> Google Sheets
                 </a>
@@ -190,6 +193,10 @@
                         </h3>
                     </div>
                     <div id="historyChart" class="w-full h-[350px]"></div>
+                    <div class="mt-2 pt-4 border-t border-slate-700/60 flex justify-end items-baseline gap-3">
+                        <span class="text-slate-400 text-sm font-bold tracking-wide">歷年合計總收益</span>
+                        <span id="history-total-profit" class="text-2xl font-black tracking-tight text-white">--</span>
+                    </div>
                 </div>
 
                 <!-- 資產佔比圓餅圖 -->
@@ -354,7 +361,7 @@
         let inventoryList = [];
         let historyList = [];
         let summary = {
-            totalMV: 0, totalCost: 0, totalProfit: 0, totalQty: 0, totalMonthly: 0, initialInvest: 0
+            totalMV: 0, totalCost: 0, totalProfit: 0, totalQty: 0, totalMonthly: 0, initialInvest: 0, historyTotal: 0
         };
 
         function processData(csvText) {
@@ -415,6 +422,9 @@
             summary.totalMonthly = inventoryList.reduce((sum, item) => sum + item.monthlyDiv, 0);
             summary.totalRoi = summary.totalCost > 0 ? (summary.totalProfit / summary.totalCost) * 100 : 0;
             summary.avgYield = summary.totalMV > 0 ? ((summary.totalMonthly * 12) / summary.totalMV) * 100 : 0;
+            
+            // 計算歷年總收益 (歷年股息 + 價差)
+            summary.historyTotal = historyList.reduce((sum, item) => sum + ((item.dividend || 0) + (item.spread || 0)), 0);
 
             renderDOM();
         }
@@ -467,6 +477,13 @@
             document.getElementById('kpi-monthly-div').innerText = formatCurrency(summary.totalMonthly);
             document.getElementById('kpi-avg-yield').innerText = formatPercent(summary.avgYield);
             document.getElementById('kpi-total-qty').innerText = formatLots(summary.totalQty);
+
+            // 渲染歷年合計總收益
+            const historyTotalEl = document.getElementById('history-total-profit');
+            if(historyTotalEl) {
+                historyTotalEl.innerText = (summary.historyTotal >= 0 ? '+' : '') + formatCurrency(summary.historyTotal);
+                historyTotalEl.className = `text-2xl font-black tracking-tight ${summary.historyTotal >= 0 ? COLOR_UP : COLOR_DOWN}`;
+            }
 
             // 2. 渲染 Table
             const tbody = document.getElementById('inventory-tbody');
