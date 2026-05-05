@@ -604,6 +604,9 @@
                         let hasActuals = false;
 
                         params.forEach(p => {
+                            // 略過我們新增用來專門顯示文字的隱藏圖層
+                            if (p.seriesName === '預期目標標籤') return; 
+
                             if (p.seriesName === '預期目標') {
                                 if (p.value) expected = p.value;
                             } else if (p.seriesName === '合計') {
@@ -653,7 +656,8 @@
                     textStyle: textStyle,
                     top: 0
                 },
-                grid: { left: '2%', right: '2%', bottom: '5%', top: '15%', containLabel: true },
+                // 加大頂部空間 (top: '20%')，避免文字被天花板切掉
+                grid: { left: '2%', right: '2%', bottom: '5%', top: '20%', containLabel: true },
                 xAxis: {
                     type: 'category',
                     data: years,
@@ -701,23 +705,8 @@
                         },
                         data: expectedTotals,
                         barMaxWidth: 40,
-                        z: 1,
-                        label: {
-                            show: true,
-                            position: 'top',
-                            distance: 10,
-                            formatter: function(params) {
-                                if (!params.value) return '';
-                                const actual = totals[params.dataIndex] || 0; // 若沒資料視為0
-                                const pct = ((actual / params.value) * 100).toFixed(1);
-                                const targetWan = Math.round(params.value / 10000);
-                                return `{title|目標${targetWan}萬}\n{pct|達成 ${pct}%}`;
-                            },
-                            rich: {
-                                title: { color: '#cbd5e1', fontSize: 12, fontWeight: 'bold', lineHeight: 18},
-                                pct: { color: '#38bdf8', fontSize: 12, fontWeight: 'bold' }
-                            }
-                        }
+                        z: 1 // 維持背景層
+                        // 注意：這裡移除了原本的 label，交給下方的新隱形層負責
                     },
                     {
                         name: '合計',
@@ -730,10 +719,45 @@
                         label: {
                             show: true,
                             position: 'top',
+                            distance: 5, // 明確設定數字距離原點 5px
                             color: '#e2e8f0',
                             fontWeight: 'bold',
                             formatter: function(p) {
                                 return (p.value !== null && p.value !== undefined) ? formatNumber(p.value) : '';
+                            }
+                        }
+                    },
+                    {
+                        // 新增：隱形文字專用層，解決遮擋問題
+                        name: '預期目標標籤',
+                        type: 'bar',
+                        barGap: '-100%',
+                        itemStyle: { color: 'transparent' }, // 透明柱子
+                        // 動態計算：把點設在 [實際總計, 預期目標] 兩者的最高處
+                        data: expectedTotals.map((targetVal, idx) => {
+                            if (!targetVal) return null;
+                            const actualVal = totals[idx] || 0;
+                            return Math.max(targetVal, actualVal); 
+                        }),
+                        barMaxWidth: 40,
+                        z: 10, // 設定超高層級，絕對不會被擋住
+                        label: {
+                            show: true,
+                            position: 'top',
+                            distance: 35, // ★ 從原本的 10 拉高到 35，讓標籤浮在合計數字之上
+                            formatter: function(params) {
+                                // 從原始資料陣列取得真正的目標值
+                                const targetVal = expectedTotals[params.dataIndex];
+                                if (!targetVal) return '';
+                                const actual = totals[params.dataIndex] || 0; 
+                                const pct = ((actual / targetVal) * 100).toFixed(1);
+                                const targetWan = Math.round(targetVal / 10000);
+                                return `{title|目標 ${targetWan}萬}\n{pct|達成 ${pct}%}`;
+                            },
+                            rich: {
+                                // 加上 textBorderColor 可以畫出黑色文字外框，避免和背後的圖表線條融為一體
+                                title: { color: '#cbd5e1', fontSize: 12, fontWeight: 'bold', lineHeight: 18, textBorderColor: '#020617', textBorderWidth: 2 },
+                                pct: { color: '#38bdf8', fontSize: 12, fontWeight: 'bold', textBorderColor: '#020617', textBorderWidth: 2 }
                             }
                         }
                     }
