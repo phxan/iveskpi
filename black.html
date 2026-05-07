@@ -154,7 +154,7 @@
                     </div>
                     <div>
                         <h3 id="kpi-monthly-div" class="text-3xl font-black text-white tracking-tight">--</h3>
-                        <p class="text-xs text-slate-500 mt-1">平均殖利率: <span id="kpi-avg-yield" class="font-medium text-blue-400">--</span></p>
+                        <p class="text-xs text-slate-500 mt-1">純股平均殖利率: <span id="kpi-avg-yield" class="font-medium text-blue-400">--</span></p>
                     </div>
                 </div>
 
@@ -414,7 +414,14 @@
             summary.totalQty = inventoryList.reduce((sum, item) => sum + item.qty, 0);
             summary.totalMonthly = inventoryList.reduce((sum, item) => sum + item.monthlyDiv, 0);
             summary.totalRoi = summary.totalCost > 0 ? (summary.totalProfit / summary.totalCost) * 100 : 0;
-            summary.avgYield = summary.totalMV > 0 ? ((summary.totalMonthly * 12) / summary.totalMV) * 100 : 0;
+            
+            // 【排除現金】計算排除現金 (9999) 後的「純投資部位市值」
+            const investMarketValue = inventoryList
+                .filter(item => item.code !== '9999') // 排除代碼 9999 的現金
+                .reduce((sum, item) => sum + item.marketValue, 0);
+
+            // 使用純投資部位市值當作分母，計算真實的平均殖利率
+            summary.avgYield = investMarketValue > 0 ? ((summary.totalMonthly * 12) / investMarketValue) * 100 : 0;
             
             // 計算歷年總收益 (歷年股息 + 價差)
             summary.historyTotal = historyList.reduce((sum, item) => sum + ((item.dividend || 0) + (item.spread || 0)), 0);
