@@ -162,7 +162,7 @@
                     </div>
                     <div>
                         <h3 id="kpi-monthly-div" class="text-3xl font-black text-white tracking-tight">--</h3>
-                        <p class="text-xs text-slate-500 mt-1">平均殖利率: <span id="kpi-avg-yield" class="font-medium text-blue-400">--</span></p>
+                        <p class="text-xs text-slate-500 mt-1">純股平均殖利率: <span id="kpi-avg-yield" class="font-medium text-blue-400">--</span></p>
                     </div>
                 </div>
 
@@ -367,7 +367,6 @@
         function processData(csvText) {
             inventoryList = [];
             historyList = [];
-            
             const lines = csvText.split(/\r?\n/);
             
             // 從第二行開始讀取 (跳過標題列)
@@ -412,16 +411,26 @@
                 }
             }
 
+            // -----------------------------
             // 計算統計數據
+            // -----------------------------
             summary.totalMV = inventoryList.reduce((sum, item) => sum + item.marketValue, 0);
-            summary.totalCost = inventoryList.reduce((sum, item) => sum + (item.cost * item.qty * 1000), 0); // 這裡以精確加總取代，若原表D欄是單價，總成本=價*張*1000。若原表是總成本就直加。
-            // 由於原表給的是 "成本" (單價) 跟 "張數"，我們直接自己推算精確總成本，或者相減。但 F(市值) - G(損益) = 成本
+            
+            // 由於原表給的是"成本"(單價)跟“張數",我們直接自己推算精確總成本,或者相減。但F(市值)-G(損益) = 成本
             summary.totalCost = inventoryList.reduce((sum, item) => sum + (item.marketValue - item.profit), 0);
+
             summary.totalProfit = inventoryList.reduce((sum, item) => sum + item.profit, 0);
             summary.totalQty = inventoryList.reduce((sum, item) => sum + item.qty, 0);
             summary.totalMonthly = inventoryList.reduce((sum, item) => sum + item.monthlyDiv, 0);
             summary.totalRoi = summary.totalCost > 0 ? (summary.totalProfit / summary.totalCost) * 100 : 0;
-            summary.avgYield = summary.totalMV > 0 ? ((summary.totalMonthly * 12) / summary.totalMV) * 100 : 0;
+            
+            // 【排除現金】計算排除現金 (9999) 後的「純投資部位市值」
+            const investMarketValue = inventoryList
+                .filter(item => item.code !== '9999') // 排除代碼 9999 的現金
+                .reduce((sum, item) => sum + item.marketValue, 0);
+
+            // 使用純投資部位市值當作分母，計算真實的平均殖利率
+            summary.avgYield = investMarketValue > 0 ? ((summary.totalMonthly * 12) / investMarketValue) * 100 : 0;
             
             // 計算歷年總收益 (歷年股息 + 價差)
             summary.historyTotal = historyList.reduce((sum, item) => sum + ((item.dividend || 0) + (item.spread || 0)), 0);
@@ -450,7 +459,7 @@
             // 數字與 % 符號分離大小
             returnBgEl.innerHTML = `${signPct}${roundedPct}<span class="text-4xl font-bold ml-0.5 tracking-tighter">%</span>`;
             returnBgEl.className = `absolute -bottom-2 right-0 text-[5.5rem] leading-[0.8] font-black opacity-[0.15] pointer-events-none select-none transition-colors flex items-baseline pr-2 pb-1 ${roundedPct >= 0 ? COLOR_UP : COLOR_DOWN}`;
-            
+
             const profitEl = document.getElementById('kpi-profit');
             const profitPctEl = document.getElementById('kpi-profit-pct');
             const iconBgEl = document.getElementById('kpi-profit-icon-bg');
@@ -550,6 +559,8 @@
 
             // 過濾並準備資料
             const chartHistData = historyList.filter(d => d.year);
+            if (chartHistData.length === 0) return; // 防呆處理
+            
             const lastYearIdx = chartHistData.length - 1;
             const currentYearStr = chartHistData[lastYearIdx].year;
             
@@ -718,7 +729,7 @@
                         label: {
                             show: true,
                             position: 'top',
-                            distance: 5, // 明確設定數字距離原點 5px
+                            distance: 5, // 讓總計數字貼近折線點
                             color: '#e2e8f0',
                             fontWeight: 'bold',
                             formatter: function(p) {
@@ -743,7 +754,7 @@
                         label: {
                             show: true,
                             position: 'top',
-                            distance: 35, // ★ 從原本的 10 拉高到 35，讓標籤浮在合計數字之上
+                            distance: 35, // 拉高標籤距離，避免和合計的數字重疊
                             formatter: function(params) {
                                 // 從原始資料陣列取得真正的目標值
                                 const targetVal = expectedTotals[params.dataIndex];
@@ -763,6 +774,7 @@
                 ]
             };
             eHistoryChart.setOption(histOption);
+
 
             // === 資產佔比圓餅圖 ===
             const pieDom = document.getElementById('pieChart');
