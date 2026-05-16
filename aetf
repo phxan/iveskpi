@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主動式 ETF 投資組合分析</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        th { cursor: pointer; user-select: none; }
+        th:hover { background-color: #e2e8f0; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 p-4 md:p-8">
+
+    <!-- 讀取中遮罩 -->
+    <div id="loadingScreen" class="fixed inset-0 bg-white z-50 flex items-center justify-center text-xl text-slate-600">
+        <i data-lucide="loader-2" class="animate-spin mr-2"></i> 讀取資料中...
+    </div>
+
+    <!-- 錯誤提示 -->
+    <div id="errorScreen" class="hidden max-w-7xl mx-auto p-8 text-red-500 bg-red-50 border border-red-200 rounded-lg mb-6">
+        <div class="flex items-center"><i data-lucide="alert-circle" class="mr-2"></i> <span id="errorMsg"></span></div>
+    </div>
+
+    <div id="appContent" class="max-w-7xl mx-auto space-y-6 hidden">
+        
+        <!-- 標題區 -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end pb-4 border-b border-slate-200 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="activity" class="text-blue-600 w-8 h-8"></i>
+                    主動式 ETF 投資組合分析
+                </h1>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                    <p class="text-slate-500">追蹤您的主動型 ETF 資產狀態與市場表現</p>
+                    <a href="https://gemini.google.com/app/b6c014fbac46f6ce?hl=zh-TW" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md border border-blue-100 transition-colors w-fit">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> 返回 Gemini 修改
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 摘要數據卡片 (針對主動型 ETF) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+                <span class="text-slate-500 text-sm font-medium flex items-center gap-1"><i data-lucide="dollar-sign" class="w-4 h-4"></i> 整體投入成本</span>
+                <span id="statCost" class="text-2xl font-bold text-slate-800 mt-2">0</span>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+                <span class="text-slate-500 text-sm font-medium flex items-center gap-1"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> 目前總市值</span>
+                <span id="statValue" class="text-2xl font-bold text-slate-800 mt-2">0</span>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+                <span id="statPnlLabel" class="text-slate-500 text-sm font-medium flex items-center gap-1"><i data-lucide="trending-up" class="w-4 h-4"></i> 總損益</span>
+                <span id="statPnl" class="text-2xl font-bold mt-2">0</span>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+                <span class="text-slate-500 text-sm font-medium flex items-center gap-1"><i data-lucide="activity" class="w-4 h-4"></i> 整體報酬率</span>
+                <span id="statRoi" class="text-2xl font-bold mt-2">0%</span>
+            </div>
+        </div>
+
+        <!-- 整體資產配置占比 (深色卡片區) -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 border-b pb-2 flex items-center justify-between">
+                <span>整體資產配置占比</span>
+                <span class="text-sm font-normal text-slate-500">檢視各類型持股比重</span>
+            </h2>
+            <div id="allocationCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- 卡片動態生成於此 -->
+            </div>
+        </div>
+
+        <!-- 滿版：資產配置柱狀圖 -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">持股狀態一覽表</h2>
+            <div class="h-[450px] w-full relative">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 底部：明細資料表 -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-slate-800">主動式 ETF 持股明細表 <span class="text-sm font-normal text-slate-500 ml-2">(點擊標題可排序)</span></h2>
+                <span id="dataCount" class="text-xs text-slate-500 bg-white px-2 py-1 rounded border">資料筆數: 0</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left whitespace-nowrap">
+                    <thead id="tableHead" class="bg-slate-100 text-slate-600 font-medium">
+                        <!-- 標題列動態生成於此 -->
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100">
+                        <!-- 資料列動態生成於此 -->
+                    </tbody>
+                    <tfoot id="tableFoot" class="bg-slate-50 border-t-2 border-slate-200 font-bold text-slate-700">
+                        <!-- 加總列動態生成於此 -->
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 核心狀態變數 ---
+        let appData = []; // 僅包含主動式ETF的資料
+        let headers = [];
+        let colKeys = {}; 
+        let myChart = null;
+        let allocationData = []; // 整體資產配置的資料
+        
+        // 排序狀態
+        let sortCol = null;
+        let sortAsc = true;
+
+        // 顏色常數 (供柱狀圖使用)
+        const COLORS = [
+            'rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 
+            'rgba(239, 68, 68, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(236, 72, 153, 0.8)', 
+            'rgba(6, 182, 212, 0.8)', 'rgba(249, 115, 22, 0.8)'
+        ];
+
+        // --- 工具函數 ---
+        const parseCSV = (str) => {
+            const arr = [];
+            let quote = false; let col = 0; let row = 0;
+            for (let c = 0; c < str.length; c++) {
+                let cc = str[c], nc = str[c + 1];
+                arr[row] = arr[row] || [];
+                arr[row][col] = arr[row][col] || '';
+                if (cc === '"' && quote && nc === '"') { arr[row][col] += cc; ++c; continue; }
+                if (cc === '"') { quote = !quote; continue; }
+                if (cc === ',' && !quote) { ++col; continue; }
+                if (cc === '\r' && nc === '\n' && !quote) { ++row; col = 0; ++c; continue; }
+                if (cc === '\n' && !quote) { ++row; col = 0; continue; }
+                if (cc === '\r' && !quote) { ++row; col = 0; continue; }
+                arr[row][col] += cc;
+            }
+            const hdrs = arr[0].map(h => h.trim());
+            const dt = arr.slice(1).filter(r => r.length > 1 || r[0] !== '').map((r, index) => {
+                const obj = { _originalIndex: index }; 
+                hdrs.forEach((h, i) => { obj[h] = r[i] ? r[i].trim() : ''; });
+                return obj;
+            });
+            return { headers: hdrs, data: dt };
+        };
+
+        const findColumn = (hdrs, keywords) => {
+            for (let kw of keywords) {
+                const found = hdrs.find(h => h.includes(kw));
+                if (found) return found;
+            }
+            return null;
+        };
+
+        const parseNumber = (val) => {
+            if (typeof val === 'number') return val;
+            if (!val) return 0;
+            const parsed = parseFloat(val.toString().replace(/,/g, '').replace(/%/g, ''));
+            return isNaN(parsed) ? 0 : parsed;
+        };
+
+        const formatCurrency = (val) => {
+            return new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', minimumFractionDigits: 0 }).format(val);
+        };
+
+        const formatPercent = (val) => {
+            return Number(val).toFixed(2) + '%';
+        };
+
+        // 註冊 ChartDataLabels 外掛
+        Chart.register(ChartDataLabels);
+
+        // --- 主程式邏輯 ---
+        async function init() {
+            try {
+                // 1. 抓取 CSV 資料
+                const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfHLeQ3OVmKrVEQXUwD7VUiC5Hgnp8DORBJsL8Rs_434tzm7frIzs5hAsFsVgDL7fZM4ySENKHw5Fy/pub?gid=312944121&single=true&output=csv';
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error('無法讀取 CSV 檔案，請確認網址或權限設定。');
+                const text = await response.text();
+                
+                const parsed = parseCSV(text);
+
+                // --- 步驟 A：計算整體資產配置占比 (包含所有股票類型) ---
+                const tempTypeCol = findColumn(parsed.headers, ['股票類型', '類型', '分類']) || '股票類型';
+                const tempValCol = findColumn(parsed.headers, ['市值', '現值', '總值']);
+                
+                let totalPortfolioValue = 0;
+                const typeMap = {};
+
+                parsed.data.forEach(row => {
+                    const v = parseNumber(row[tempValCol]);
+                    if (v > 0) {
+                        let t = row[tempTypeCol] || '其他';
+                        if (t === '主動型 ETF') t = '主動式 ETF'; // 名稱優化
+                        if (t.includes('市值型')) t = '市值型';   // 統一歸類為「市值型」
+                        
+                        totalPortfolioValue += v;
+                        if (!typeMap[t]) typeMap[t] = 0;
+                        typeMap[t] += v;
+                    }
+                });
+
+                allocationData = Object.keys(typeMap).map(type => ({
+                    type: type,
+                    value: typeMap[type],
+                    percent: totalPortfolioValue > 0 ? (typeMap[type] / totalPortfolioValue) * 100 : 0
+                })).sort((a, b) => b.value - a.value);
+
+                // --- 步驟 B：處理主動式 ETF 的明細資料 ---
+                // 移除股票類型欄位，不顯示在明細表
+                headers = parsed.headers.filter(h => h !== '股票類型');
+
+                // 偵測關鍵欄位
+                colKeys = {
+                    ticker: findColumn(headers, ['代號', '代碼']) || headers[0],
+                    name: findColumn(headers, ['名稱', '標的', '商品', 'ETF']) || headers[1],
+                    shares: findColumn(headers, ['合計股數', '股數', '張數', '庫存', '數量']), 
+                    cost: findColumn(headers, ['庫存成本', '總成本', '投入', '成本', '金額']), 
+                    value: findColumn(headers, ['市值', '現值', '總值']),
+                    pnl: findColumn(headers, ['損益', '獲利', '報酬額']),
+                    pnlPercent: findColumn(headers, ['報酬率', '%', '損益率'])
+                };
+
+                // 防呆：如果代碼和名稱抓到同一個欄位，強制錯開
+                if (colKeys.ticker === colKeys.name && headers.length > 1) {
+                    colKeys.ticker = headers[0];
+                    colKeys.name = headers[1];
+                }
+
+                // 在「現價」與「合計股數」中間插入「平均成本」標題
+                let insertIndex = headers.findIndex(h => h.includes('現價'));
+                if (insertIndex !== -1) {
+                    headers.splice(insertIndex + 1, 0, '平均成本');
+                } else {
+                    let shareIndex = headers.findIndex(h => h.includes('合計股數') || h.includes('股數'));
+                    if (shareIndex !== -1) {
+                        headers.splice(shareIndex, 0, '平均成本');
+                    } else {
+                        headers.push('平均成本'); 
+                    }
+                }
+
+                // 篩選主動型 ETF
+                appData = parsed.data.filter(row => {
+                    return Object.values(row).some(v => typeof v === 'string' && v.includes('主動型 ETF'));
+                }).map(row => {
+                    const newRow = { _originalIndex: row._originalIndex };
+                    Object.keys(row).forEach(key => {
+                        let val = row[key];
+                        if (val === '主動型 ETF') val = '主動式';
+                        if (key === '股票類型') return;
+                        newRow[key] = val;
+                    });
+
+                    // 計算「平均成本」
+                    const costVal = parseNumber(newRow[colKeys.cost]);
+                    const sharesVal = parseNumber(newRow[colKeys.shares]);
+                    if (sharesVal > 0) {
+                        newRow['平均成本'] = (costVal / sharesVal).toFixed(2);
+                    } else {
+                        newRow['平均成本'] = '0.00';
+                    }
+
+                    return newRow;
+                });
+
+                // 隱藏 Loading，顯示主畫面
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('appContent').classList.remove('hidden');
+
+                // 渲染畫面
+                updateDashboard();
+
+            } catch (error) {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('errorScreen').classList.remove('hidden');
+                document.getElementById('errorMsg').textContent = error.message;
+                lucide.createIcons();
+            }
+        }
+
+        function calculateStats() {
+            let totalCost = 0; let totalValue = 0; let totalPnl = 0;
+
+            appData.forEach(item => {
+                if (colKeys.cost) totalCost += parseNumber(item[colKeys.cost]);
+                if (colKeys.value) totalValue += parseNumber(item[colKeys.value]);
+                if (colKeys.pnl) {
+                    totalPnl += parseNumber(item[colKeys.pnl]);
+                } else if (colKeys.cost && colKeys.value) {
+                    totalPnl += (parseNumber(item[colKeys.value]) - parseNumber(item[colKeys.cost]));
+                }
+            });
+
+            const roi = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0;
+            return { totalCost, totalValue, totalPnl, roi };
+        }
+
+        function updateDashboard() {
+            const stats = calculateStats();
+            
+            // 1. 更新卡片
+            document.getElementById('statCost').textContent = formatCurrency(stats.totalCost);
+            document.getElementById('statValue').textContent = formatCurrency(stats.totalValue);
+            
+            const pnlEl = document.getElementById('statPnl');
+            const pnlLabel = document.getElementById('statPnlLabel');
+            pnlEl.textContent = (stats.totalPnl > 0 ? '+' : '') + formatCurrency(stats.totalPnl);
+            // 台灣習慣：正紅、負綠
+            pnlEl.className = `text-2xl font-bold mt-2 ${stats.totalPnl >= 0 ? 'text-red-600' : 'text-green-600'}`;
+            pnlLabel.innerHTML = `${stats.totalPnl >= 0 ? '<i data-lucide="trending-up" class="w-4 h-4 text-red-500"></i>' : '<i data-lucide="trending-down" class="w-4 h-4 text-green-500"></i>'} 總損益`;
+
+            const roiEl = document.getElementById('statRoi');
+            roiEl.textContent = (stats.roi > 0 ? '+' : '') + stats.roi.toFixed(2) + '%';
+            // 台灣習慣：正紅、負綠
+            roiEl.className = `text-2xl font-bold mt-2 ${stats.roi >= 0 ? 'text-red-600' : 'text-green-600'}`;
+
+            document.getElementById('dataCount').textContent = `資料筆數: ${appData.length}`;
+
+            // 2. 渲染資產配置卡片
+            renderAllocationCards();
+
+            // 3. 更新圖表
+            renderChart();
+            
+            // 4. 渲染表格
+            renderTable();
+        }
+
+        function renderAllocationCards() {
+            const container = document.getElementById('allocationCards');
+            let html = '';
+
+            // 依據類型指定固定顏色，參考圖片風格
+            const getCardColor = (type, index) => {
+                if (type.includes('高股息')) return { border: 'border-red-500', dot: 'bg-red-500', bar: 'bg-red-500' };
+                if (type.includes('市值')) return { border: 'border-blue-500', dot: 'bg-blue-500', bar: 'bg-blue-500' };
+                if (type.includes('金融')) return { border: 'border-amber-500', dot: 'bg-amber-500', bar: 'bg-amber-500' };
+                if (type.includes('債券')) return { border: 'border-emerald-500', dot: 'bg-emerald-500', bar: 'bg-emerald-500' };
+                if (type.includes('主動')) return { border: 'border-pink-500', dot: 'bg-pink-500', bar: 'bg-pink-500' };
+                if (type.includes('傳產')) return { border: 'border-purple-500', dot: 'bg-purple-500', bar: 'bg-purple-500' };
+                
+                // 其他類型使用備用顏色
+                const fallbacks = [
+                    { border: 'border-cyan-500', dot: 'bg-cyan-500', bar: 'bg-cyan-500' },
+                    { border: 'border-orange-500', dot: 'bg-orange-500', bar: 'bg-orange-500' },
+                    { border: 'border-lime-500', dot: 'bg-lime-500', bar: 'bg-lime-500' },
+                    { border: 'border-indigo-500', dot: 'bg-indigo-500', bar: 'bg-indigo-500' }
+                ];
+                return fallbacks[index % fallbacks.length];
+            };
+
+            allocationData.forEach((item, index) => {
+                const color = getCardColor(item.type, index);
+                const displayValue = formatCurrency(item.value).replace('NT$', '$'); // 轉換為 $ 符號以符合原圖風格
+                
+                html += `
+                    <div class="bg-white rounded-xl p-5 relative overflow-hidden shadow-sm border border-slate-100 flex flex-col border-l-4 ${color.border}">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-3 h-3 rounded-full ${color.dot}"></div>
+                            <span class="text-slate-500 text-sm font-medium">${item.type}</span>
+                        </div>
+                        <div class="text-2xl font-bold text-slate-800 mb-4">
+                            ${displayValue}
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden inset-shadow-sm">
+                                <div class="h-full ${color.bar} rounded-full" style="width: ${item.percent}%"></div>
+                            </div>
+                            <span class="text-slate-500 text-sm font-semibold w-12 text-right">${item.percent.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderChart() {
+            if (!colKeys.value || !colKeys.name) return;
+
+            const totalValue = appData.reduce((sum, item) => sum + Math.max(0, parseNumber(item[colKeys.value])), 0);
+
+            // 準備資料
+            const chartData = appData
+                .map(item => {
+                    const shares = colKeys.shares ? parseNumber(item[colKeys.shares]) : 0;
+                    const value = Math.max(0, parseNumber(item[colKeys.value]));
+                    const pnl = colKeys.pnl ? parseNumber(item[colKeys.pnl]) : 0;
+                    const pnlPercent = colKeys.pnlPercent ? parseNumber(item[colKeys.pnlPercent]) : 0;
+                    
+                    const tickerStr = item[colKeys.ticker] ? String(item[colKeys.ticker]).trim() : '';
+                    const nameStr = item[colKeys.name] ? String(item[colKeys.name]).trim() : '';
+                    const displayName = (tickerStr && tickerStr !== nameStr) ? [tickerStr, nameStr] : [nameStr || tickerStr || '未知'];
+
+                    const lots = Math.floor(shares / 100) / 10;
+                    const remaining10 = Math.max(0, 10 - lots);
+
+                    return {
+                        name: displayName,
+                        value: value,
+                        lots: lots,
+                        remaining10: remaining10,
+                        pnl: pnl,
+                        pnlPercent: pnlPercent,
+                        percent: totalValue > 0 ? ((value / totalValue) * 100).toFixed(1) : 0
+                    };
+                })
+                .filter(item => item.value > 0)
+                .sort((a, b) => b.value - a.value); 
+
+            const ctx = document.getElementById('barChart').getContext('2d');
+            
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.map(d => d.name),
+                    datasets: [
+                        {
+                            label: '目前庫存 (張)',
+                            data: chartData.map(d => d.lots),
+                            backgroundColor: chartData.map((d, i) => COLORS[i % COLORS.length]),
+                            borderRadius: function(context) {
+                                const item = chartData[context.dataIndex];
+                                return item && item.remaining10 > 0 ? 
+                                    { topLeft: 0, topRight: 0, bottomLeft: 4, bottomRight: 4 } : 
+                                    { topLeft: 4, topRight: 4, bottomLeft: 4, bottomRight: 4 };
+                            }
+                        },
+                        {
+                            label: '距離10張目標',
+                            data: chartData.map(d => d.remaining10),
+                            backgroundColor: 'rgba(203, 213, 225, 0.4)', 
+                            borderColor: 'rgba(148, 163, 184, 0.8)', 
+                            borderWidth: { top: 1, right: 1, bottom: 0, left: 1 },
+                            borderDash: [5, 5],
+                            borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: { top: 75 } 
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} 張`;
+                                },
+                                afterLabel: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        const item = chartData[context.dataIndex];
+                                        const pnlSign = item.pnl > 0 ? '+' : '';
+                                        return [
+                                            `市值佔比: ${item.percent}% (${formatCurrency(item.value)})`,
+                                            `庫存損益: ${pnlSign}${formatCurrency(item.pnl)} (${pnlSign}${item.pnlPercent}%)`
+                                        ];
+                                    }
+                                    return '';
+                                }
+                            }
+                        },
+                        datalabels: {
+                            formatter: function(value, context) {
+                                const item = chartData[context.dataIndex];
+                                if ((context.datasetIndex === 1 && item.remaining10 > 0) || 
+                                    (context.datasetIndex === 0 && item.remaining10 === 0)) {
+                                    const pnlSign = item.pnl > 0 ? '+' : '';
+                                    return [
+                                        `損益: ${pnlSign}${item.pnl.toLocaleString('zh-TW')}`,
+                                        `佔 ${item.percent}%`,
+                                        `${item.lots} 張`
+                                    ];
+                                }
+                                return null;
+                            },
+                            color: function(context) {
+                                const item = chartData[context.dataIndex];
+                                // 台灣習慣：正數紅色、負數綠色、0為灰色
+                                return item.pnl > 0 ? '#dc2626' : (item.pnl < 0 ? '#16a34a' : '#475569');
+                            },
+                            anchor: 'end',
+                            align: 'top',
+                            textAlign: 'center',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            stacked: true, 
+                            beginAtZero: true, 
+                            title: { display: true, text: '單位：張數', color: '#64748b' }
+                        },
+                        x: { 
+                            stacked: true, 
+                            grid: { display: false },
+                            ticks: { maxRotation: 0, minRotation: 0 } 
+                        }
+                    }
+                }
+            });
+        }
+
+        // 排序處理函數
+        function handleSort(header) {
+            if (sortCol === header) {
+                sortAsc = !sortAsc; 
+            } else {
+                sortCol = header;
+                sortAsc = true; 
+            }
+            
+            appData.sort((a, b) => {
+                let valA = a[header] || '';
+                let valB = b[header] || '';
+                
+                const numA = parseNumber(valA);
+                const numB = parseNumber(valB);
+                const isStrA = isNaN(numA) || String(valA).trim() === '';
+                const isStrB = isNaN(numB) || String(valB).trim() === '';
+
+                if (!isStrA && !isStrB) {
+                    valA = numA; valB = numB;
+                }
+
+                if (valA < valB) return sortAsc ? -1 : 1;
+                if (valA > valB) return sortAsc ? 1 : -1;
+                return 0;
+            });
+            
+            renderTable();
+        }
+
+        function renderTable() {
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+            const tfoot = document.getElementById('tableFoot');
+
+            const getSortIcon = (colName) => {
+                if (sortCol !== colName) return '<i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-300 ml-1"></i>';
+                return sortAsc ? '<i data-lucide="arrow-up" class="inline w-3 h-3 text-blue-500 ml-1"></i>' 
+                               : '<i data-lucide="arrow-down" class="inline w-3 h-3 text-blue-500 ml-1"></i>';
+            };
+
+            let thHTML = `<tr><th class="px-6 py-3 border-b border-slate-200">#</th>`;
+            headers.forEach(h => {
+                thHTML += `<th class="px-6 py-3 border-b border-slate-200 hover:text-blue-600 transition-colors" onclick="handleSort('${h}')">
+                            <div class="flex items-center">${h} ${getSortIcon(h)}</div>
+                           </th>`;
+            });
+            thHTML += `</tr>`;
+            thead.innerHTML = thHTML;
+
+            let trHTML = '';
+            let totals = {}; 
+            
+            headers.forEach(h => totals[h] = 0); 
+
+            appData.forEach((row, index) => {
+                trHTML += `<tr class="hover:bg-slate-50 transition-colors">`;
+                trHTML += `<td class="px-6 py-4 text-slate-400">${index + 1}</td>`;
+                
+                headers.forEach(h => {
+                    const val = row[h];
+                    let colorClass = "text-slate-700";
+                    let numVal = parseNumber(val);
+
+                    if ((h.includes('損益') || h.includes('報酬')) && val) {
+                        // 台灣習慣：正紅、負綠
+                        if (numVal > 0) colorClass = "text-red-600 font-medium";
+                        if (numVal < 0) colorClass = "text-green-600 font-medium";
+                    }
+
+                    if (h === colKeys.cost || h === colKeys.value || h === colKeys.pnl || h.includes('股數') || h.includes('張數') || h === '平均成本') {
+                         totals[h] += numVal;
+                    }
+
+                    trHTML += `<td class="px-6 py-4 ${colorClass}">${val || '-'}</td>`;
+                });
+                trHTML += `</tr>`;
+            });
+
+            if (appData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${headers.length + 1}" class="px-6 py-8 text-center text-slate-400">找不到主動式 ETF 資料。</td></tr>`;
+                tfoot.innerHTML = '';
+            } else {
+                tbody.innerHTML = trHTML;
+                
+                let tfHTML = `<tr><td class="px-6 py-4">總計</td>`;
+                headers.forEach(h => {
+                    let text = '';
+                    let colorClass = '';
+                    
+                    if (h === colKeys.name || h === colKeys.ticker) {
+                        text = ''; 
+                    } else if (h === colKeys.cost || h === colKeys.value) {
+                        text = formatCurrency(totals[h]);
+                    } else if (h === colKeys.pnl) {
+                        text = formatCurrency(totals[h]);
+                        // 台灣習慣：正紅、負綠
+                        colorClass = totals[h] >= 0 ? "text-red-600" : "text-green-600";
+                        text = (totals[h] > 0 ? '+' : '') + text;
+                    } else if (h === colKeys.pnlPercent) {
+                        const roi = totals[colKeys.cost] > 0 ? (totals[colKeys.pnl] / totals[colKeys.cost]) * 100 : 0;
+                        text = formatPercent(roi);
+                        // 台灣習慣：正紅、負綠
+                        colorClass = roi >= 0 ? "text-red-600" : "text-green-600";
+                        text = (roi > 0 ? '+' : '') + text;
+                    } else if (h === '平均成本') {
+                        const tCost = totals[colKeys.cost] || 0;
+                        const tShares = totals[colKeys.shares] || 0;
+                        text = tShares > 0 ? (tCost / tShares).toFixed(2) : '0.00';
+                    } else if (totals[h] > 0 || totals[h] < 0) {
+                        text = totals[h].toLocaleString('zh-TW');
+                    }
+
+                    tfHTML += `<td class="px-6 py-4 ${colorClass}">${text}</td>`;
+                });
+                tfHTML += `</tr>`;
+                tfoot.innerHTML = tfHTML;
+            }
+
+            lucide.createIcons();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
