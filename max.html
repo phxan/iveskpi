@@ -210,6 +210,21 @@
                 </div>
             </div>
 
+            <!-- 持股配置與再平衡 -->
+            <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col border-t-4 border-t-indigo-500">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i data-lucide="target" class="w-5 h-5 text-indigo-400"></i> 持股目標配置與再平衡雷達
+                    </h3>
+                </div>
+                <!-- ECharts 柱狀圖 -->
+                <div id="allocChart" class="w-full h-[350px]"></div>
+                <!-- 再平衡建議區塊 -->
+                <div id="rebalance-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4 pt-6 border-t border-slate-700/60">
+                    <!-- JS 動態產生 -->
+                </div>
+            </div>
+
             <!-- 庫存清單表格 -->
             <div class="glass-card rounded-2xl shadow-xl overflow-hidden flex flex-col border-t-4 border-t-slate-600">
                 <div class="p-5 border-b border-slate-700/80 flex justify-between items-center bg-slate-800/40">
@@ -224,15 +239,15 @@
                     <table class="w-full text-sm text-left whitespace-nowrap">
                         <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-700">
                             <tr>
-                                <th class="px-5 py-4 font-bold">標的名稱</th>
-                                <th class="px-5 py-4 text-right font-bold">現價</th>
-                                <th class="px-5 py-4 text-right font-bold">成本</th>
-                                <th class="px-5 py-4 text-right font-bold">張數</th>
-                                <th class="px-5 py-4 text-right font-bold">庫存市值</th>
-                                <th class="px-5 py-4 text-right font-bold">庫存損益</th>
-                                <th class="px-5 py-4 text-right font-bold">報酬率</th>
-                                <th class="px-5 py-4 text-right font-bold">殖利率</th>
-                                <th class="px-5 py-4 text-right font-bold">平均月配</th>
+                                <th class="px-5 py-4 font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('name')">標的名稱 <span id="sort-icon-name" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('price')">現價 <span id="sort-icon-price" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('cost')">成本 <span id="sort-icon-cost" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('qty')">張數 <span id="sort-icon-qty" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('marketValue')">庫存市值 <span id="sort-icon-marketValue" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('profit')">庫存損益 <span id="sort-icon-profit" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('profitPct')">報酬率 <span id="sort-icon-profitPct" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('yieldRate')">殖利率 <span id="sort-icon-yieldRate" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
+                                <th class="px-5 py-4 text-right font-bold cursor-pointer hover:text-blue-300 transition-colors select-none group" onclick="sortTable('monthlyDiv')">平均月配 <span id="sort-icon-monthlyDiv" class="ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400">⇅</span></th>
                             </tr>
                         </thead>
                         <tbody id="inventory-tbody" class="divide-y divide-slate-700/50 bg-slate-800/20">
@@ -266,6 +281,7 @@
         // 1. 全域變數與格式化工具
         // -----------------------------------------------------
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4YwsiJL0j_G8CVfAOM4INw1nRJNkfM16Woh8x93Mq0bn6aATGSZbVYt0T9xCuWlIfuLva6MiDoWKK/pub?gid=1074499139&single=true&output=csv';
+        const ALLOC_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4YwsiJL0j_G8CVfAOM4INw1nRJNkfM16Woh8x93Mq0bn6aATGSZbVYt0T9xCuWlIfuLva6MiDoWKK/pub?gid=840214148&single=true&output=csv';
         
         // 為了相容台股習慣：上漲紅色、下跌綠色 (若要美股習慣則互換)
         const COLOR_UP = 'text-rose-400';
@@ -326,12 +342,24 @@
             errorEl.classList.add('hidden');
 
             try {
-                // 加上時間戳防止快取
-                const response = await fetch(`${CSV_URL}&t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // 加上時間戳防止快取，並同時抓取兩個表格
+                const nowStamp = new Date().getTime();
+                const [invRes, allocRes] = await Promise.all([
+                    fetch(`${CSV_URL}&t=${nowStamp}`),
+                    fetch(`${ALLOC_CSV_URL}&t=${nowStamp}`)
+                ]);
                 
-                const csvText = await response.text();
+                if (!invRes.ok) throw new Error(`Inventory HTTP error! status: ${invRes.status}`);
+                if (!allocRes.ok) throw new Error(`Allocation HTTP error! status: ${allocRes.status}`);
+                
+                const csvText = await invRes.text();
+                const allocCsvText = await allocRes.text();
+                
                 processData(csvText);
+                processAllocData(allocCsvText);
+                
+                // 【關鍵修正】確保兩個資料表都解析完畢後，才統一執行 DOM 渲染
+                renderDOM();
                 
                 // 設定更新時間
                 const now = new Date();
@@ -360,9 +388,40 @@
         // 全域資料存放
         let inventoryList = [];
         let historyList = [];
+        let allocationList = [];
         let summary = {
             totalMV: 0, totalCost: 0, totalProfit: 0, totalQty: 0, totalMonthly: 0, initialInvest: 0, historyTotal: 0
         };
+        // 排序狀態
+        let currentSort = { key: 'marketValue', asc: false };
+
+        function processAllocData(csvText) {
+            allocationList = [];
+            const lines = csvText.split(/\r?\n/);
+            
+            // 從第二行開始讀取 (跳過標題列)
+            for (let i = 1; i < lines.length; i++) {
+                const rawLine = lines[i];
+                if (!rawLine.trim()) continue;
+                
+                const row = parseCSVRow(rawLine);
+                
+                if (row[0] && row[0].trim() !== '') {
+                    allocationList.push({
+                        code: row[0],
+                        name: row[1],
+                        targetPct: parseNumber(row[2]),
+                        actualPct: parseNumber(row[3]),
+                        currPrice: parseNumber(row[4]),
+                        actualValue: parseNumber(row[5]),
+                        targetValue: parseNumber(row[6]),
+                        diffValue: parseNumber(row[7]),
+                        lotsAdj: parseNumber(row[8]),
+                        monthlyInvest: parseNumber(row[9]), // 【新增】J 欄 (投入分配)
+                    });
+                }
+            }
+        }
 
         function processData(csvText) {
             inventoryList = [];
@@ -435,7 +494,7 @@
             // 計算歷年總收益 (歷年股息 + 價差)
             summary.historyTotal = historyList.reduce((sum, item) => sum + ((item.dividend || 0) + (item.spread || 0)), 0);
 
-            renderDOM();
+            // 【刪除了這裡原本呼叫的 renderDOM()，避免資料還沒完全解析就渲染導致卡片空白】
         }
 
         // -----------------------------------------------------
@@ -494,7 +553,120 @@
                 historyTotalEl.className = `text-2xl font-black tracking-tight ${summary.historyTotal >= 0 ? COLOR_UP : COLOR_DOWN}`;
             }
 
-            // 2. 渲染 Table
+            // 2. 渲染 Table (拆分到獨立函數以便排序時重繪)
+            applySort();
+            renderTable();
+
+            // Footer 統計
+            document.getElementById('foot-qty').innerText = formatLots(summary.totalQty);
+            document.getElementById('foot-mv').innerText = formatCurrency(summary.totalMV);
+            
+            const fProfit = document.getElementById('foot-profit');
+            const fRoi = document.getElementById('foot-roi');
+            fProfit.innerText = (summary.totalProfit >= 0 ? '+' : '') + formatNumber(summary.totalProfit);
+            fRoi.innerText = (summary.totalProfit >= 0 ? '+' : '') + formatPercent(summary.totalRoi);
+            fProfit.className = `px-5 py-4 text-right font-bold ${summary.totalProfit >= 0 ? COLOR_UP : COLOR_DOWN}`;
+            fRoi.className = `px-5 py-4 text-right font-bold ${summary.totalProfit >= 0 ? COLOR_UP : COLOR_DOWN}`;
+            
+            document.getElementById('foot-yield').innerText = formatPercent(summary.avgYield);
+            document.getElementById('foot-monthly').innerText = formatCurrency(summary.totalMonthly);
+            
+            // 3. 渲染持股配置再平衡建議雷達
+            let incCards = '', decCards = '', mainCards = '';
+            allocationList.forEach(item => {
+                const diffPct = (item.actualPct - item.targetPct).toFixed(1);
+                const unit = item.code === '9999' ? '元' : '張';
+                const lotsAbs = Math.abs(item.lotsAdj).toLocaleString('zh-TW');
+
+                // 【修改】將定期定額預計投入標籤字體放大，並加上明顯的陰影與粗體
+                const investBadge = item.monthlyInvest > 0 
+                    ? `<div class="mt-3"><span class="inline-flex px-3 py-1.5 rounded-lg text-xs font-bold bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40 items-baseline gap-1.5 shadow-sm"><i data-lucide="piggy-bank" class="w-4 h-4 self-center"></i>預計投入 <span class="text-xl text-fuchsia-100 font-black leading-none">${item.monthlyInvest.toLocaleString('zh-TW')}</span> 元</span></div>` 
+                    : '';
+
+                if (item.lotsAdj > 0) {
+                    incCards += `
+                        <div class="p-3.5 rounded-xl border-l-4 border-blue-500 bg-blue-500/10 flex justify-between items-center transition-colors hover:bg-blue-500/20">
+                            <div>
+                                <p class="font-bold text-white text-sm">${item.name} <span class="text-[10px] text-slate-400 ml-0.5">(${item.code})</span></p>
+                                <p class="text-[11px] text-slate-300 mt-1">現 <span class="font-semibold text-white">${item.actualPct}%</span> / 目 <span class="font-semibold text-white">${item.targetPct}%</span> <span class="text-blue-400 font-bold ml-1.5">(-${Math.abs(diffPct)}%)</span></p>
+                                ${investBadge}
+                            </div>
+                            <div class="text-right flex flex-col justify-center items-end">
+                                <p class="font-black text-sm text-blue-400">補 ${lotsAbs}${unit}</p>
+                            </div>
+                        </div>`;
+                } else if (item.lotsAdj < 0) {
+                    decCards += `
+                        <div class="p-3.5 rounded-xl border-l-4 border-rose-500 bg-rose-500/10 flex justify-between items-center transition-colors hover:bg-rose-500/20">
+                            <div>
+                                <p class="font-bold text-white text-sm">${item.name} <span class="text-[10px] text-slate-400 ml-0.5">(${item.code})</span></p>
+                                <p class="text-[11px] text-slate-300 mt-1">現 <span class="font-semibold text-white">${item.actualPct}%</span> / 目 <span class="font-semibold text-white">${item.targetPct}%</span> <span class="text-rose-400 font-bold ml-1.5">(+${Math.abs(diffPct)}%)</span></p>
+                                ${investBadge}
+                            </div>
+                            <div class="text-right flex flex-col justify-center items-end">
+                                <p class="font-black text-sm text-rose-400">超 ${lotsAbs}${unit}</p>
+                            </div>
+                        </div>`;
+                } else {
+                    mainCards += `
+                        <div class="p-3.5 rounded-xl border-l-4 border-emerald-500 bg-emerald-500/10 flex justify-between items-center transition-colors hover:bg-emerald-500/20">
+                            <div>
+                                <p class="font-bold text-white text-sm">${item.name} <span class="text-[10px] text-slate-400 ml-0.5">(${item.code})</span></p>
+                                <p class="text-[11px] text-slate-300 mt-1">現 <span class="font-semibold text-white">${item.actualPct}%</span> / 目 <span class="font-semibold text-white">${item.targetPct}%</span></p>
+                                ${investBadge}
+                            </div>
+                            <div class="text-right flex flex-col items-end justify-center">
+                                <p class="font-black text-xs text-emerald-400 mt-0.5">達標</p>
+                            </div>
+                        </div>`;
+                }
+            });
+
+            document.getElementById('rebalance-grid').innerHTML = `
+                <div class="space-y-4">
+                    <h4 class="text-blue-400 font-bold flex items-center gap-2 text-base"><i data-lucide="trending-up" class="w-5 h-5"></i> 需加碼標的 <span class="text-xs font-normal text-slate-400 ml-1">(佔比落後)</span></h4>
+                    ${incCards || `<div class="text-slate-500 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-700/50">目前無落後標的</div>`}
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-rose-400 font-bold flex items-center gap-2 text-base"><i data-lucide="trending-down" class="w-5 h-5"></i> 需減碼標的 <span class="text-xs font-normal text-slate-400 ml-1">(佔比超標)</span></h4>
+                    ${decCards || `<div class="text-slate-500 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-700/50">目前無超標標的</div>`}
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-emerald-400 font-bold flex items-center gap-2 text-base"><i data-lucide="check-circle-2" class="w-5 h-5"></i> 維持現狀 <span class="text-xs font-normal text-slate-400 ml-1">(健康區間)</span></h4>
+                    ${mainCards || `<div class="text-slate-500 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-700/50">目前無達標標的</div>`}
+                </div>
+            `;
+            // 由於動態更新了 innerHTML，這裡要再呼叫一次 Lucide 以渲染 SVG 圖示
+            lucide.createIcons();
+        }
+
+        // --- 排序與表格重繪邏輯 ---
+        function sortTable(key) {
+            if (currentSort.key === key) {
+                currentSort.asc = !currentSort.asc;
+            } else {
+                currentSort.key = key;
+                currentSort.asc = false; // 預設降冪(數字大的在上面)
+            }
+            applySort();
+            renderTable();
+        }
+
+        function applySort() {
+            inventoryList.sort((a, b) => {
+                let valA = a[currentSort.key];
+                let valB = b[currentSort.key];
+                
+                // 字串與數字排序處理
+                if (typeof valA === 'string') {
+                    return currentSort.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                } else {
+                    return currentSort.asc ? valA - valB : valB - valA;
+                }
+            });
+        }
+
+        function renderTable() {
             const tbody = document.getElementById('inventory-tbody');
             tbody.innerHTML = '';
             document.getElementById('table-count').innerText = inventoryList.length;
@@ -526,19 +698,20 @@
                 tbody.appendChild(tr);
             });
 
-            // Footer 統計
-            document.getElementById('foot-qty').innerText = formatLots(summary.totalQty);
-            document.getElementById('foot-mv').innerText = formatCurrency(summary.totalMV);
-            
-            const fProfit = document.getElementById('foot-profit');
-            const fRoi = document.getElementById('foot-roi');
-            fProfit.innerText = (summary.totalProfit >= 0 ? '+' : '') + formatNumber(summary.totalProfit);
-            fRoi.innerText = (summary.totalProfit >= 0 ? '+' : '') + formatPercent(summary.totalRoi);
-            fProfit.className = `px-5 py-4 text-right font-bold ${summary.totalProfit >= 0 ? COLOR_UP : COLOR_DOWN}`;
-            fRoi.className = `px-5 py-4 text-right font-bold ${summary.totalProfit >= 0 ? COLOR_UP : COLOR_DOWN}`;
-            
-            document.getElementById('foot-yield').innerText = formatPercent(summary.avgYield);
-            document.getElementById('foot-monthly').innerText = formatCurrency(summary.totalMonthly);
+            // 更新表頭的排序箭頭圖示
+            const keys = ['name', 'price', 'cost', 'qty', 'marketValue', 'profit', 'profitPct', 'yieldRate', 'monthlyDiv'];
+            keys.forEach(k => {
+                const iconEl = document.getElementById(`sort-icon-${k}`);
+                if (iconEl) {
+                    if (k === currentSort.key) {
+                        iconEl.innerHTML = currentSort.asc ? '▲' : '▼';
+                        iconEl.className = 'ml-1 text-[11px] text-blue-400 transition-colors';
+                    } else {
+                        iconEl.innerHTML = '⇅';
+                        iconEl.className = 'ml-1 text-[10px] text-slate-600 opacity-50 transition-colors group-hover:text-blue-400';
+                    }
+                }
+            });
         }
 
         // -----------------------------------------------------
@@ -546,6 +719,7 @@
         // -----------------------------------------------------
         let eHistoryChart = null;
         let ePieChart = null;
+        let eAllocChart = null;
 
         function initCharts() {
             // ECharts 通用文字樣式設定
@@ -844,12 +1018,108 @@
                 ]
             };
             ePieChart.setOption(pieOption);
+
+            // === 持股配置橫向柱狀圖 ===
+            const allocDom = document.getElementById('allocChart');
+            if(eAllocChart) eAllocChart.dispose();
+            eAllocChart = echarts.init(allocDom);
+
+            const allocNames = allocationList.map(a => a.name);
+            const allocTargets = allocationList.map(a => a.targetPct);
+            const allocActuals = allocationList.map(a => a.actualPct);
+
+            const allocOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    borderColor: '#334155',
+                    textStyle: { color: '#f8fafc' },
+                    formatter: function (params) {
+                        const dataIndex = params[0].dataIndex;
+                        const item = allocationList[dataIndex];
+                        const lotsAbs = Math.abs(item.lotsAdj).toLocaleString('zh-TW');
+                        const unit = item.code === '9999' ? '元' : '張';
+                        const action = item.lotsAdj > 0 ? `補 ${lotsAbs}${unit}` : (item.lotsAdj < 0 ? `超 ${lotsAbs}${unit}` : '達標');
+                        const actionColor = item.lotsAdj > 0 ? '#38bdf8' : (item.lotsAdj < 0 ? '#fb7185' : '#10b981');
+
+                        return `
+                            <div class="font-bold mb-2 border-b border-slate-600 pb-1">${item.name} (${item.code})</div>
+                            <div class="flex justify-between gap-4 mb-1">
+                                <span class="text-slate-400">目標占比:</span>
+                                <span class="font-bold text-slate-200">${item.targetPct}%</span>
+                            </div>
+                            <div class="flex justify-between gap-4 mb-2">
+                                <span class="text-slate-400">實際占比:</span>
+                                <span class="font-bold text-blue-400">${item.actualPct}%</span>
+                            </div>
+                            <div class="border-t border-slate-600 pt-2 flex justify-between gap-4">
+                                <span class="text-slate-400">應調整:</span>
+                                <span class="font-bold" style="color: ${actionColor}">${action}</span>
+                            </div>
+                        `;
+                    }
+                },
+                legend: {
+                    data: ['配置目標', '目前占比'],
+                    textStyle: textStyle,
+                    top: 0
+                },
+                grid: { left: '2%', right: '5%', bottom: '0%', top: '15%', containLabel: true },
+                xAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#94a3b8', formatter: '{value}%' },
+                    splitLine: splitLineStyle
+                },
+                yAxis: {
+                    type: 'category',
+                    data: allocNames,
+                    axisLabel: { color: '#94a3b8', fontWeight: 'bold' },
+                    axisLine: { lineStyle: { color: '#475569' } },
+                    axisTick: { show: false },
+                    inverse: true // 將排名最前面的放在最上面
+                },
+                series: [
+                    {
+                        name: '配置目標',
+                        type: 'bar',
+                        barGap: '-100%',
+                        data: allocTargets,
+                        itemStyle: { 
+                            color: 'rgba(71, 85, 105, 0.3)', 
+                            borderColor: '#64748b', 
+                            borderWidth: 1, 
+                            borderType: 'dashed', 
+                            borderRadius: [0, 4, 4, 0] 
+                        },
+                        barMaxWidth: 32
+                    },
+                    {
+                        name: '目前占比',
+                        type: 'bar',
+                        data: allocActuals,
+                        itemStyle: { 
+                            color: '#38bdf8',
+                            borderRadius: [0, 4, 4, 0] 
+                        },
+                        barMaxWidth: 32,
+                        label: {
+                            show: true,
+                            position: 'right',
+                            color: '#e2e8f0',
+                            formatter: (p) => `${p.value}%`
+                        }
+                    }
+                ]
+            };
+            eAllocChart.setOption(allocOption);
         }
 
         // 監聽視窗大小改變，自動調整圖表尺寸
         window.addEventListener('resize', () => {
             if (eHistoryChart) eHistoryChart.resize();
             if (ePieChart) ePieChart.resize();
+            if (eAllocChart) eAllocChart.resize();
         });
 
         // 啟動應用程式
