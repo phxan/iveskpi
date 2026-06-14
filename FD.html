@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人財務成長儀表板</title>
+    <!-- 引入 Tailwind CSS (版面與樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Chart.js (圖表繪製) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入 PapaParse (CSV 解析) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- 引入 FontAwesome 圖示庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0f172a; /* Tailwind slate-900 */
+            color: #f8fafc; /* Tailwind slate-50 */
+            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        .card {
+            background-color: #1e293b; /* Tailwind slate-800 */
+            border: 1px solid #334155; /* Tailwind slate-700 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <!-- 載入中遮罩 -->
+    <div id="loading" class="fixed inset-0 flex flex-col items-center justify-center bg-slate-900 z-50 transition-opacity duration-500">
+        <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-emerald-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <div class="text-xl font-bold text-slate-200 tracking-wide">分析資料載入中...</div>
+    </div>
+
+    <div class="max-w-7xl mx-auto space-y-6 hidden opacity-0 transition-opacity duration-1000" id="dashboard">
+        <!-- 頁首 -->
+        <header class="mb-8 border-b border-slate-700 pb-4">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-end">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">個人財務成長儀表板</h1>
+                    <p class="text-slate-400 text-sm mt-2">最新資料時間: <span id="last-update" class="font-medium text-slate-300"></span></p>
+                </div>
+                <!-- 頂部按鈕區塊 -->
+                <div class="flex items-center gap-3 mt-4 md:mt-0">
+                    <a href="https://gemini.google.com/app/218b73e1a11bcbba?hl=zh-TW" target="_blank" rel="noopener noreferrer" class="text-xs bg-indigo-600/80 hover:bg-indigo-500 text-indigo-100 px-3 py-2 rounded-lg transition-colors shadow-sm font-medium border border-indigo-500/50 flex items-center" title="回到 Gemini 修改程式">
+                        <i class="fas fa-external-link-alt mr-1.5"></i> 修改儀表板
+                    </a>
+                    <!-- 萬/完整金額 切換按鈕 -->
+                    <button id="toggle-amount-btn" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg transition-colors shadow-sm font-medium border border-slate-600 flex items-center">
+                        <i class="fas fa-expand-arrows-alt mr-1"></i> 切換完整金額
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 第一區塊：最新資訊卡片 -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="card p-5 rounded-xl flex flex-col justify-center border-l-4 border-l-emerald-500">
+                <div class="text-slate-400 text-sm mb-1 font-medium">淨資產</div>
+                <div class="text-2xl font-bold text-white" id="card-net-asset">--</div>
+            </div>
+            <div class="card p-5 rounded-xl flex flex-col justify-center border-l-4 border-l-blue-500">
+                <div class="text-slate-400 text-sm mb-1 font-medium">總資產</div>
+                <div class="text-2xl font-bold text-white" id="card-total-asset">--</div>
+            </div>
+            <div class="card p-5 rounded-xl flex flex-col justify-center border-l-4 border-l-sky-400">
+                <div class="text-slate-400 text-sm mb-1 font-medium">現金</div>
+                <div class="text-2xl font-bold text-white" id="card-cash">--</div>
+            </div>
+            <div class="card p-5 rounded-xl flex flex-col justify-center border-l-4 border-l-red-500">
+                <div class="text-slate-400 text-sm mb-1 font-medium">總負債</div>
+                <div class="text-2xl font-bold text-white" id="card-liability">--</div>
+            </div>
+            <div class="card p-5 rounded-xl flex flex-col justify-center border-l-4 border-l-amber-500">
+                <div class="text-slate-400 text-sm mb-1 font-medium">質押</div>
+                <div class="text-2xl font-bold text-white" id="card-pledge">--</div>
+            </div>
+        </div>
+
+        <!-- 第二區塊：三大比例長條圖 -->
+        <div class="card p-6 rounded-xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-slate-100"><i class="fas fa-balance-scale mr-2"></i>核心資產負債比例分析</h2>
+                <!-- 隱藏金額 切換按鈕 -->
+                <button id="toggle-ratio-btn" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg transition-colors shadow-sm font-medium border border-slate-600">
+                    <i class="fas fa-eye-slash mr-1"></i> 隱藏金額
+                </button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" id="ratios-container">
+                <!-- 比例圖由 JS 動態生成 -->
+            </div>
+        </div>
+
+        <!-- 溫馨提示區塊 -->
+        <div class="bg-indigo-900/40 border border-indigo-500/30 rounded-xl p-4 text-sm text-indigo-200">
+            <p><i class="fas fa-lightbulb text-indigo-400 mr-2"></i><strong>預測模型說明：</strong>未來的推估已全面導入「關聯性資產負債模型」。模型假設您未來不再大幅擴張負債槓桿，因此總資產不會再出現歷史上的翻倍暴增，而是回歸每年約 <strong>4%</strong> 的保守自然增長 (含股息、資本利得與日常儲蓄)。淨資產的成長將單純來自於這龐大資產基數的複利效應。</p>
+        </div>
+
+        <!-- 第三區塊：主圖表 (淨資產成長趨勢表) -->
+        <div class="card p-6 rounded-xl flex flex-col">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-emerald-400">淨資產成長趨勢表</h2>
+                    <p class="text-xs text-slate-400 mt-1">連動計算：[預估淨資產] = [預估總資產] - [維持不變的負債]。</p>
+                </div>
+            </div>
+            <div class="chart-container flex-grow" style="height: 400px;">
+                <canvas id="netAssetChart"></canvas>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                <span class="text-sm font-medium text-slate-400">當前淨資產</span>
+                <span class="text-xl font-bold text-emerald-400 tracking-wider" id="footer-val-netAsset">--</span>
+            </div>
+        </div>
+
+        <!-- 第四區塊：次要圖表網格 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 總資產變化表 -->
+            <div class="card p-6 rounded-xl flex flex-col">
+                <h3 class="text-lg font-bold mb-2 text-blue-400">總資產變化趨勢 (含未來預估)</h3>
+                <p class="text-xs text-slate-400 mb-2">假設脫離高槓桿擴張期，未來以 4% 複合成長率穩健增值。</p>
+                <div class="chart-container flex-grow"><canvas id="totalAssetChart"></canvas></div>
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-400">當前總資產</span>
+                    <span class="text-xl font-bold text-blue-400 tracking-wider" id="footer-val-totalAsset">--</span>
+                </div>
+            </div>
+            <!-- 股票變化表 -->
+            <div class="card p-6 rounded-xl flex flex-col">
+                <h3 class="text-lg font-bold mb-2 text-violet-400">股票資產變化趨勢 (含未來預估)</h3>
+                <p class="text-xs text-slate-400 mb-2">按目前佔總資產的固定比例，隨總資產連動成長。</p>
+                <div class="chart-container flex-grow"><canvas id="stockChart"></canvas></div>
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-400">當前股票總值</span>
+                    <span class="text-xl font-bold text-violet-400 tracking-wider" id="footer-val-stock">--</span>
+                </div>
+            </div>
+            <!-- 總負債變化表 -->
+            <div class="card p-6 rounded-xl flex flex-col">
+                <h3 class="text-lg font-bold mb-2 text-red-400">總負債變化紀錄 (歷史資料)</h3>
+                <p class="text-xs text-slate-400 mb-2">僅顯示歷史紀錄，預估模型在背景假設未來負債不再增加。</p>
+                <div class="chart-container flex-grow"><canvas id="liabilityChart"></canvas></div>
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-400">當前總負債</span>
+                    <span class="text-xl font-bold text-red-400 tracking-wider" id="footer-val-liability">--</span>
+                </div>
+            </div>
+            <!-- 質押變化表 -->
+            <div class="card p-6 rounded-xl flex flex-col">
+                <h3 class="text-lg font-bold mb-2 text-amber-500">股票質押變化紀錄 (歷史資料)</h3>
+                <p class="text-xs text-slate-400 mb-2">僅顯示歷史紀錄。</p>
+                <div class="chart-container flex-grow"><canvas id="pledgeChart"></canvas></div>
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-400">當前質押金額</span>
+                    <span class="text-xl font-bold text-amber-500 tracking-wider" id="footer-val-pledge">--</span>
+                </div>
+            </div>
+            <!-- 負債比變化表 -->
+            <div class="card p-6 rounded-xl lg:col-span-2 flex flex-col">
+                <h3 class="text-lg font-bold mb-2 text-cyan-400">負債比變化趨勢 (負債/資產占比)</h3>
+                <p class="text-xs text-slate-400 mb-2">預估模型中，隨總資產穩健成長且負債維持不變，負債比將逐年下降，呈現財務體質持續優化的軌跡。</p>
+                <div class="chart-container flex-grow"><canvas id="debtRatioChart"></canvas></div>
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-400">當前負債比</span>
+                    <span class="text-xl font-bold text-cyan-400 tracking-wider" id="footer-val-debtRatio">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 設定 Chart.js 預設樣式適應深色模式
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', 'Segoe UI', Roboto, sans-serif";
+
+        // 狀態與設定
+        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTNAyvuieC5H2HHHmsMU5OmEPGLBbEcNgzg2JO_iTKQgg02uDFJSctS1sRIHQ-KGMBkb-L4_v7kAc3K/pub?gid=1157721673&single=true&output=csv";
+        const currentYear = 2026;
+        const birthDate = new Date('1984-07-22');
+        
+        let globalLatestData = null;
+        let isTopCardFullAmount = false; // 預設：精簡萬為單位
+        let isRatioAmountHidden = false; // 預設：顯示比例區塊金額
+
+        // 事件綁定：頂部金額單位切換
+        document.getElementById('toggle-amount-btn').addEventListener('click', () => {
+            isTopCardFullAmount = !isTopCardFullAmount;
+            renderTopCards();
+            renderChartFooters(); // 同步更新圖表下方數值
+        });
+
+        // 事件綁定：比例區塊金額隱藏切換
+        document.getElementById('toggle-ratio-btn').addEventListener('click', () => {
+            isRatioAmountHidden = !isRatioAmountHidden;
+            renderRatios();
+        });
+
+        // 工具函數：圖表或完整貨幣格式化
+        const formatCurrency = (val) => new Intl.NumberFormat('zh-TW', { 
+            style: 'currency', 
+            currency: 'TWD', 
+            maximumFractionDigits: 0 
+        }).format(val);
+
+        // 工具函數：計算年齡
+        function getAge(date) {
+            let age = date.getFullYear() - birthDate.getFullYear();
+            const m = date.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && date.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        // 工具函數：字串轉數字，防呆處理
+        function parseNum(val) {
+            if (!val) return 0;
+            const cleaned = val.toString().replace(/[,$\s]/g, '');
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // 載入與解析 CSV
+        Papa.parse(csvUrl, {
+            download: true,
+            header: false,
+            complete: function(results) {
+                try {
+                    processData(results.data);
+                    const loading = document.getElementById('loading');
+                    const dashboard = document.getElementById('dashboard');
+                    loading.style.opacity = '0';
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                        dashboard.classList.remove('hidden');
+                        setTimeout(() => dashboard.style.opacity = '1', 50);
+                    }, 500);
+                } catch (e) {
+                    console.error("Data processing error:", e);
+                    document.getElementById('loading').innerHTML = `<div class="text-red-500 font-bold text-xl">資料處理發生錯誤，請確認 CSV 格式。</div>`;
+                }
+            },
+            error: function(err) {
+                console.error("CSV fetch error:", err);
+                document.getElementById('loading').innerHTML = `<div class="text-red-500 font-bold text-xl">載入失敗，請檢查資料來源或網路連線。</div>`;
+            }
+        });
+
+        // 核心資料處理
+        function processData(rows) {
+            let data = [];
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || r.length < 10) continue; 
+                
+                const dateStr = r[0];
+                if (!dateStr) continue;
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) continue;
+
+                const netAsset = parseNum(r[1]);
+                const origTotalAsset = parseNum(r[2]);
+                const cash = parseNum(r[3]);
+                const stock = parseNum(r[4]);
+                const liability = Math.abs(parseNum(r[5]));
+                const pledge = Math.abs(parseNum(r[9]));
+                
+                const insurance = r.length > 32 ? parseNum(r[32]) : 0;
+                const fund = r.length > 33 ? parseNum(r[33]) : 0;
+                const regularSavings = r.length > 34 ? parseNum(r[34]) : 0;
+
+                const totalAsset = origTotalAsset + insurance + fund + regularSavings;
+                // 動態計算當期負債比
+                const debtRatio = totalAsset > 0 ? (liability / totalAsset * 100) : 0;
+
+                data.push({ date, netAsset, totalAsset, cash, stock, liability, pledge, debtRatio });
+            }
+
+            data.sort((a, b) => a.date - b.date);
+            if (data.length === 0) throw new Error("No valid data found.");
+
+            const latest = data[data.length - 1];
+            globalLatestData = latest; // 儲存最新資料供切換按鈕使用
+
+            // 更新最後資料日期
+            const lastUpdateStr = `${latest.date.getFullYear()}年${latest.date.getMonth()+1}月${latest.date.getDate()}日`;
+            document.getElementById('last-update').innerText = lastUpdateStr;
+
+            // 渲染頂部卡片、圖表底部數值、比例區塊
+            renderTopCards();
+            renderChartFooters();
+            renderRatios();
+
+            // 整理時間軸與圖表繪製
+            let timeline = buildUnifiedTimeline(data, currentYear);
+
+            const tlNetAsset = markMilestones(extractData(timeline, 'netAsset', true), 'netAsset');
+            const tlTotalAsset = markMilestones(extractData(timeline, 'totalAsset', true), 'totalAsset');
+            const tlStock = markMilestones(extractData(timeline, 'stock', true), 'stock');
+            const tlLiability = extractData(timeline, 'liability', false);
+            const tlPledge = extractData(timeline, 'pledge', false);
+            // 萃取負債比時間軸資料
+            const tlDebtRatio = extractData(timeline, 'debtRatio', true);
+
+            createChart('netAssetChart', '淨資產', tlNetAsset, '16, 185, 129');   
+            createChart('totalAssetChart', '總資產', tlTotalAsset, '59, 130, 246'); 
+            createChart('stockChart', '股票', tlStock, '139, 92, 246');         
+            createChart('liabilityChart', '總負債', tlLiability, '239, 68, 68');  
+            createChart('pledgeChart', '質押', tlPledge, '245, 158, 11');         
+            // 繪製負債比圖表 (加入 isPercentage 參數與參考線)
+            createChart('debtRatioChart', '負債比', tlDebtRatio, '6, 182, 212', true, [
+                { value: 100, label: '100% (高風險警戒)', color: 'rgba(239, 68, 68, 0.8)' },
+                { value: 50, label: '50% (穩健水位)', color: 'rgba(34, 197, 94, 0.8)' },
+                { value: 30, label: '30% (高資產黃金水位)', color: 'rgba(168, 85, 247, 0.8)' }
+            ]); 
+        }
+
+        // 渲染頂端資訊卡片
+        function renderTopCards() {
+            if (!globalLatestData) return;
+            const latest = globalLatestData;
+
+            // 判斷顯示萬為單位或是完整金額
+            const formatCardVal = (val) => {
+                if (isTopCardFullAmount) {
+                    return formatCurrency(val);
+                } else {
+                    return (val / 10000).toLocaleString('zh-TW', { maximumFractionDigits: 0 }) + ' 萬';
+                }
+            };
+
+            document.getElementById('card-net-asset').innerText = formatCardVal(latest.netAsset);
+            document.getElementById('card-total-asset').innerText = formatCardVal(latest.totalAsset);
+            document.getElementById('card-cash').innerText = formatCardVal(latest.cash);
+            document.getElementById('card-liability').innerText = formatCardVal(latest.liability);
+            document.getElementById('card-pledge').innerText = formatCardVal(latest.pledge);
+            
+            // 更新按鈕文字與圖示
+            document.getElementById('toggle-amount-btn').innerHTML = isTopCardFullAmount 
+                ? '<i class="fas fa-compress-arrows-alt mr-1"></i> 切換為「萬」單位'
+                : '<i class="fas fa-expand-arrows-alt mr-1"></i> 切換為完整金額';
+        }
+
+        // 渲染各圖表下方的當前數值
+        function renderChartFooters() {
+            if (!globalLatestData) return;
+            const latest = globalLatestData;
+
+            const formatCardVal = (val) => {
+                if (isTopCardFullAmount) {
+                    return formatCurrency(val);
+                } else {
+                    return (val / 10000).toLocaleString('zh-TW', { maximumFractionDigits: 0 }) + ' 萬';
+                }
+            };
+
+            document.getElementById('footer-val-netAsset').innerText = formatCardVal(latest.netAsset);
+            document.getElementById('footer-val-totalAsset').innerText = formatCardVal(latest.totalAsset);
+            document.getElementById('footer-val-stock').innerText = formatCardVal(latest.stock);
+            document.getElementById('footer-val-liability').innerText = formatCardVal(latest.liability);
+            document.getElementById('footer-val-pledge').innerText = formatCardVal(latest.pledge);
+            
+            // 負債比永遠顯示百分比格式，不受萬/完整金額切換影響
+            document.getElementById('footer-val-debtRatio').innerText = latest.debtRatio.toFixed(1) + '%';
+        }
+
+        // 渲染核心比例區塊
+        function renderRatios() {
+            if (!globalLatestData) return;
+            const latest = globalLatestData;
+
+            // 計算 負債比 (總負債/總資產)
+            const liabRatioStr = latest.totalAsset > 0 ? (latest.liability / latest.totalAsset * 100).toFixed(1) + '%' : '0%';
+            const liabHtml = `
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-xs text-slate-400 font-medium">負債比 (總負債/總資產)</span>
+                    <span class="text-sm font-bold text-red-400 bg-red-400/10 px-2 py-0.5 rounded">${liabRatioStr}</span>
+                </div>
+            `;
+
+            // 計算 維持率 (股票/質押)
+            const pledgeRatioStr = latest.pledge > 0 ? (latest.stock / latest.pledge * 100).toFixed(0) + '%' : 'N/A';
+            const pledgeHtml = `
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-xs text-slate-400 font-medium">槓桿維持率 (股票/質押)</span>
+                    <span class="text-sm font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">${pledgeRatioStr}</span>
+                </div>
+            `;
+
+            // 計算 持股比例 (股票 / (現金+股票))
+            const totalCashStock = latest.cash + latest.stock;
+            const stockHoldingRatioStr = totalCashStock > 0 ? (latest.stock / totalCashStock * 100).toFixed(1) + '%' : '0%';
+            const stockRatioHtml = `
+                <div class="mt-4 pt-3 border-t border-slate-700/80 flex justify-between items-center">
+                    <span class="text-xs text-slate-400 font-medium">持股比例 (是否滿倉)</span>
+                    <span class="text-sm font-bold text-violet-400 bg-violet-400/10 px-2 py-0.5 rounded">${stockHoldingRatioStr}</span>
+                </div>
+            `;
+
+            const ratiosContainer = document.getElementById('ratios-container');
+            ratiosContainer.innerHTML = 
+                buildRatioWidget('資產 vs 負債比例', '總資產', latest.totalAsset, '總負債', latest.liability, 'bg-blue-500', 'bg-red-500', liabHtml) +
+                buildRatioWidget('現金 vs 股票比例', '現金', latest.cash, '股票', latest.stock, 'bg-emerald-500', 'bg-violet-500', stockRatioHtml) +
+                buildRatioWidget('股票 vs 質押 (槓桿) 比例', '股票', latest.stock, '質押', latest.pledge, 'bg-fuchsia-500', 'bg-amber-500', pledgeHtml);
+
+            // 更新隱藏按鈕狀態
+            document.getElementById('toggle-ratio-btn').innerHTML = isRatioAmountHidden 
+                ? '<i class="fas fa-eye mr-1"></i> 顯示金額' 
+                : '<i class="fas fa-eye-slash mr-1"></i> 隱藏金額';
+        }
+
+        // 產生比例圖的 HTML 結構
+        function buildRatioWidget(title, labelLeft, valLeft, labelRight, valRight, colorLeft, colorRight, extraHtml = '') {
+            const total = valLeft + valRight;
+            const pctLeft = total === 0 ? 50 : (valLeft / total * 100);
+            const pctRight = total === 0 ? 50 : (valRight / total * 100);
+
+            const displayValLeft = isRatioAmountHidden ? '****' : formatCurrency(valLeft);
+            const displayValRight = isRatioAmountHidden ? '****' : formatCurrency(valRight);
+
+            return `
+                <div class="flex flex-col justify-center bg-slate-800/50 p-5 rounded-xl border border-slate-700/50">
+                    <h3 class="text-sm font-bold text-slate-200 mb-4 tracking-wide">${title}</h3>
+                    <div class="flex justify-between text-xs mb-2 text-slate-300 font-medium">
+                        <span>${labelLeft} (${pctLeft.toFixed(1)}%)</span>
+                        <span>${labelRight} (${pctRight.toFixed(1)}%)</span>
+                    </div>
+                    <div class="flex h-3.5 rounded-full overflow-hidden bg-slate-700 mb-4 shadow-inner">
+                        <div class="${colorLeft} flex justify-center items-center transition-all duration-1000" style="width: ${pctLeft}%"></div>
+                        <div class="${colorRight} flex justify-center items-center transition-all duration-1000" style="width: ${pctRight}%"></div>
+                    </div>
+                    <div class="flex justify-between text-sm font-semibold text-white transition-opacity duration-300">
+                        <span>${displayValLeft}</span>
+                        <span>${displayValRight}</span>
+                    </div>
+                    ${extraHtml}
+                </div>
+            `;
+        }
+
+        // 建立統一的關聯性時間軸 (包含歷史與未來預估)
+        function buildUnifiedTimeline(rawData, currentYear) {
+            let timeline = [];
+            
+            let grouped = {};
+            rawData.forEach(d => {
+                const y = d.date.getFullYear();
+                const m = d.date.getMonth(); 
+                if (!grouped[y]) grouped[y] = {};
+                grouped[y][m] = d; 
+            });
+
+            for (let y = 2021; y <= currentYear; y++) {
+                if (y < currentYear) {
+                    if (grouped[y]) {
+                        const months = Object.keys(grouped[y]).map(Number).sort((a,b)=>b-a);
+                        if (months.length > 0) {
+                            const d = grouped[y][months[0]];
+                            timeline.push({ ...d, label: y.toString(), isForecast: false, age: getAge(d.date) });
+                        }
+                    }
+                } else {
+                    if (grouped[y]) {
+                        const months = Object.keys(grouped[y]).map(Number).sort((a,b)=>a-b);
+                        months.forEach(m => {
+                            const d = grouped[y][m];
+                            const mStr = (m + 1).toString().padStart(2, '0');
+                            timeline.push({ ...d, label: `${y}-${mStr}`, isForecast: false, age: getAge(d.date) });
+                        });
+                    }
+                }
+            }
+
+            if (timeline.length > 0) {
+                let lastActual = timeline[timeline.length - 1];
+                let currentTotalAsset = lastActual.totalAsset;
+                let currentLiability = lastActual.liability;
+                let currentStock = lastActual.stock;
+                
+                let stockRatio = currentTotalAsset > 0 ? (currentStock / currentTotalAsset) : 0;
+                const conservativeAssetCAGR = 0.04;
+
+                for (let i = 1; i <= 10; i++) {
+                    let y = currentYear + i;
+                    let projectedDate = new Date(y, 11, 31);
+                    
+                    let projectedTotalAsset = currentTotalAsset * Math.pow((1 + conservativeAssetCAGR), i);
+                    let projectedLiability = currentLiability; 
+                    let projectedNetAsset = projectedTotalAsset - projectedLiability;
+                    let projectedStock = projectedTotalAsset * stockRatio;
+                    // 連動推算未來的負債比
+                    let projectedDebtRatio = projectedTotalAsset > 0 ? (projectedLiability / projectedTotalAsset * 100) : 0;
+
+                    timeline.push({
+                        label: `${y}`, // 移除 (預估) 字樣，保持版面簡潔
+                        date: projectedDate,
+                        netAsset: projectedNetAsset,
+                        totalAsset: projectedTotalAsset,
+                        stock: projectedStock,
+                        liability: projectedLiability,
+                        pledge: lastActual.pledge, 
+                        debtRatio: projectedDebtRatio,
+                        isForecast: true,
+                        age: getAge(projectedDate)
+                    });
+                }
+            }
+            return timeline;
+        }
+
+        // 依照欄位與是否預估，從統一時間軸萃取資料給圖表
+        function extractData(unifiedTimeline, field, includeForecast) {
+            return unifiedTimeline
+                .filter(d => includeForecast ? true : !d.isForecast)
+                .map(d => ({
+                    ...d, // 保留所有的原始資料 (包含 totalAsset, liability，供 tooltip 使用)
+                    value: d[field]
+                }));
+        }
+
+        // 標註里程碑突破點
+        function markMilestones(timelineData, type) {
+            let thresholds = [];
+            for (let i = 1; i <= 20; i++) {
+                thresholds.push(i * 10000000);
+            }
+
+            let passedThresholds = new Set();
+            let currentMax = -Infinity;
+
+            const actuals = timelineData.filter(d => !d.isForecast);
+            const latestActual = actuals.length > 0 ? actuals[actuals.length - 1] : timelineData[0];
+
+            timelineData.forEach(p => {
+                if (p.value > currentMax) {
+                    currentMax = p.value;
+                    let achieved = null;
+                    for (let t of thresholds) {
+                        if (currentMax >= t && !passedThresholds.has(t)) {
+                            achieved = t;
+                            passedThresholds.add(t);
+                        }
+                    }
+                    if (achieved) {
+                        p.milestone = achieved;
+                        
+                        if (p.isForecast) {
+                            let yearsDiff = (p.date - latestActual.date) / (1000 * 60 * 60 * 24 * 365.25);
+                            p.timeToReach = Math.max(0.1, yearsDiff).toFixed(1);
+                            p.progress = Math.min(99, Math.max(0, Math.floor((latestActual.value / achieved) * 100)));
+                        } else {
+                            p.timeToReach = 0;
+                            p.progress = 100;
+                        }
+                    }
+                }
+            });
+            return timelineData;
+        }
+
+        // 繪製 Chart.js 共用邏輯
+        function createChart(ctxId, title, timeline, colorRGB, isPercentage = false, refLines = []) {
+            const ctx = document.getElementById(ctxId).getContext('2d');
+            const labels = timeline.map(p => p.label);
+            const data = timeline.map(p => p.value);
+
+            const bgColors = timeline.map(p => {
+                if (p.milestone) {
+                    return p.isForecast ? 'rgba(250, 204, 21, 0.9)' : 'rgba(202, 138, 4, 0.6)'; 
+                }
+                return p.isForecast ? `rgba(${colorRGB}, 0.25)` : `rgba(${colorRGB}, 0.85)`;
+            });
+            const borderColors = timeline.map(p => {
+                if (p.milestone) {
+                    return p.isForecast ? 'rgba(234, 179, 8, 1)' : 'rgba(161, 98, 7, 0.8)'; 
+                }
+                return p.isForecast ? `rgba(${colorRGB}, 0.8)` : `rgba(${colorRGB}, 1)`;
+            });
+
+            const milestoneLabelsPlugin = {
+                id: 'milestoneLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    const meta = chart.getDatasetMeta(0);
+                    
+                    meta.data.forEach((bar, index) => {
+                        const p = timeline[index];
+                        if (p.milestone) {
+                            ctx.save();
+                            ctx.textAlign = 'center';
+                            ctx.font = 'bold 11px sans-serif';
+                            
+                            if (p.isForecast) {
+                                ctx.fillStyle = '#fbbf24'; 
+                                ctx.fillText(`約 ${p.timeToReach}年`, bar.x, bar.y - 18);
+                                ctx.fillStyle = '#fcd34d'; 
+                                ctx.fillText(`進度 ${p.progress}%`, bar.x, bar.y - 6);
+                            }
+                            
+                            ctx.restore();
+                        }
+                    });
+                }
+            };
+
+            // 自定義 Chart.js 外掛：繪製水平參考線
+            const referenceLinesPlugin = {
+                id: 'referenceLines',
+                beforeDatasetsDraw(chart) {
+                    if (!refLines || refLines.length === 0) return;
+                    const { ctx, chartArea: { top, bottom, left, right }, scales: { y } } = chart;
+                    
+                    ctx.save();
+                    refLines.forEach(line => {
+                        const yPos = y.getPixelForValue(line.value);
+                        // 確保線條在圖表範圍內
+                        if(yPos >= top && yPos <= bottom) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = line.color || 'rgba(255, 255, 255, 0.5)';
+                            ctx.lineWidth = 1.5;
+                            ctx.setLineDash([5, 5]); // 虛線設計
+                            ctx.moveTo(left, yPos);
+                            ctx.lineTo(right, yPos);
+                            ctx.stroke();
+
+                            // 繪製標籤文字
+                            ctx.fillStyle = line.color || 'rgba(255, 255, 255, 0.5)';
+                            ctx.font = 'bold 11px sans-serif';
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(line.label, right - 5, yPos - 4);
+                        }
+                    });
+                    ctx.restore();
+                }
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                plugins: [milestoneLabelsPlugin, referenceLinesPlugin],
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 1.5,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 40 
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#e2e8f0',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    const pt = timeline[context.dataIndex];
+                                    // 若為百分比圖表，改變數值顯示格式
+                                    let val = isPercentage ? pt.value.toFixed(1) + '%' : formatCurrency(pt.value);
+                                    let typeStr = pt.isForecast ? '【模型預估】' : '【真實紀錄】';
+                                    
+                                    let lines = [`${typeStr} ${title}: ${val}`];
+                                    if (pt.age) lines.push(`👤 當時年齡: ${pt.age} 歲`);
+                                    
+                                    // 特製：如果這張圖是負債比，額外顯示當期的資產與負債金額
+                                    if (title === '負債比') {
+                                        lines.push(`💰 當期總資產: ${formatCurrency(pt.totalAsset)}`);
+                                        lines.push(`💳 當期總負債: ${formatCurrency(pt.liability)}`);
+                                    }
+
+                                    if (pt.milestone) {
+                                        lines.push(`🎉 突破里程碑: ${pt.milestone / 10000} 萬！`);
+                                        if (pt.isForecast) {
+                                            lines.push(`⏳ 距離達成約需: ${pt.timeToReach} 年`);
+                                            lines.push(`📊 目前達成率: ${pt.progress}%`);
+                                        } else {
+                                            lines.push(`✅ 已於歷史紀錄中達成`);
+                                        }
+                                    }
+                                    return lines;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { 
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false 
+                            },
+                            ticks: { 
+                                color: '#94a3b8',
+                                callback: function(value) { 
+                                    // Y 軸刻度格式化
+                                    if (isPercentage) return value + '%';
+                                    if(value >= 10000) return (value / 10000).toFixed(0) + ' 萬';
+                                    return value; 
+                                },
+                                maxTicksLimit: 8
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { 
+                                color: '#94a3b8',
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
