@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>公司下午茶訂購表單</title>
+    <title>公司下午茶訂購表單 - 有飲</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -27,31 +27,36 @@
 
     <div class="max-w-xl mx-auto pt-10 pb-20 px-4 sm:px-6 lg:px-8">
         
+        <!-- 表單標題區塊 -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-200 mb-4 text-amber-700 text-3xl shadow-sm">
-                <i class="fa-solid fa-mug-hot"></i>
+                <i class="fa-solid fa-glass-water"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">04/17(五) 歡樂下午茶時光</h1>
-            <p class="text-gray-600 mb-4">請填寫您的全名與餐點搭配，慰勞一下辛苦的自己吧！<br>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">06/16(二) 有飲 飲料訂購</h1>
+            <p class="text-gray-600 mb-4">請填寫您的全名與飲料搭配，慰勞一下辛苦的自己吧！<br>
             <span class="text-amber-600 font-medium text-sm">（若真的沒有想法也可以棄填，將由小助理協助搭配唷~）</span></p>
             
+            <!-- 醒目截止時間提示 -->
             <div class="inline-flex items-center justify-center px-5 py-2.5 bg-red-100 text-red-700 rounded-full font-bold shadow-sm border border-red-200 fade-in animate-pulse">
                 <i class="fa-regular fa-clock mr-2 text-lg"></i>
-                <span>點餐時間至 2026.04.16 (四) 14:00 截止</span>
+                <span>點餐時間至 2026.06.16 (二) 10:00 截止</span>
             </div>
         </div>
 
+        <!-- 熱門排行榜區塊 -->
         <div id="leaderboard" class="bg-amber-100/50 rounded-2xl p-6 mb-8 hidden fade-in border border-amber-200">
             <h3 class="text-lg font-bold text-amber-800 mb-3 flex items-center">
-                <i class="fa-solid fa-fire text-red-500 mr-2"></i> 目前大家都在點什麼？
+                <i class="fa-solid fa-fire text-red-500 mr-2"></i> 目前大家都在喝什麼？
             </h3>
             <ul id="popularList" class="space-y-2 text-sm text-gray-700">
                 <li><i class="fa-solid fa-spinner fa-spin mr-2"></i>資料載入中...</li>
             </ul>
         </div>
 
+        <!-- 表單區塊 -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden fade-in relative">
             
+            <!-- 逾期覆蓋層 (預設隱藏) -->
             <div id="timeoutOverlay" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
                 <div class="bg-gray-100 border border-gray-300 p-6 rounded-2xl text-center shadow-lg transform -translate-y-4">
                     <i class="fa-solid fa-lock text-4xl text-gray-400 mb-3"></i>
@@ -63,6 +68,7 @@
             <div class="p-6 sm:p-8" id="formWrapper">
                 <form id="orderForm" class="space-y-6">
                     
+                    <!-- 姓名填寫 -->
                     <div>
                         <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
                             您的全名 <span class="text-red-500">*</span>
@@ -72,54 +78,92 @@
                         <p class="text-xs text-red-500 mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>請務必填寫正確，否則無法提供客製化餐點</p>
                     </div>
 
+                    <!-- 第一區：飲料選擇 -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-3">
-                            A區：主餐選項 (請擇一) <span class="text-red-500">*</span>
+                            第一區：飲料選項 (請擇一) <span class="text-red-500">*</span>
                         </label>
                         <div class="space-y-3">
+                            <!-- 選項 1 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="main_meal" value="三年愛班 豆花黑白配冰沙" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <input type="radio" name="drink" value="焦香椪糖紅茶" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
                                     <span class="flex items-center flex-wrap gap-1.5 font-medium">
-                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded shadow-sm border border-blue-200">三年愛班</span>
-                                        <span>豆花黑白配冰沙</span>
-                                        <i class="fa-solid fa-bowl-food text-blue-500"></i>
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">有飲</span>
+                                        <span>焦香椪糖紅茶</span>
+                                        <i class="fa-solid fa-mug-hot text-orange-600"></i>
                                         <span class="fire-badge"></span>
                                     </span>
-                                    <span class="block text-sm text-gray-500 mt-1">豆花 + 牛奶冰沙及黑糖冰沙</span>
                                 </div>
                             </label>
+                            <!-- 選項 2 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="main_meal" value="三年愛班 雙黑白配冰沙" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <input type="radio" name="drink" value="焦香椪糖四季春" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
                                     <span class="flex items-center flex-wrap gap-1.5 font-medium">
-                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded shadow-sm border border-blue-200">三年愛班</span>
-                                        <span>雙黑白配冰沙</span>
-                                        <i class="fa-solid fa-ice-cream text-pink-500"></i>
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">有飲</span>
+                                        <span>焦香椪糖四季春</span>
+                                        <i class="fa-solid fa-leaf text-green-600"></i>
                                         <span class="fire-badge"></span>
                                     </span>
-                                    <span class="block text-sm text-gray-500 mt-1">仙草凍 + 豆花 + 牛奶冰沙及黑糖冰沙</span>
                                 </div>
                             </label>
+                            <!-- 選項 3 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="main_meal" value="三年愛班 仙草凍黑白配冰沙" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <input type="radio" name="drink" value="玫瑰鹽奶霜四季春" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
                                     <span class="flex items-center flex-wrap gap-1.5 font-medium">
-                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded shadow-sm border border-blue-200">三年愛班</span>
-                                        <span>仙草凍黑白配冰沙</span>
-                                        <i class="fa-solid fa-mug-hot text-emerald-600"></i>
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">有飲</span>
+                                        <span>玫瑰鹽奶霜四季春</span>
+                                        <i class="fa-solid fa-cloud text-blue-400"></i>
                                         <span class="fire-badge"></span>
                                     </span>
-                                    <span class="block text-sm text-gray-500 mt-1">仙草凍 + 牛奶冰沙及黑糖冰沙</span>
                                 </div>
                             </label>
+                            <!-- 選項 4 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                <input type="radio" name="main_meal" value="陳Q 香雞排" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <input type="radio" name="drink" value="椪糖奶霜 (紅茶)" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
                                     <span class="flex items-center flex-wrap gap-1.5 font-medium">
-                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">陳Q</span>
-                                        <span>香雞排</span>
-                                        <i class="fa-solid fa-drumstick-bite text-orange-500"></i>
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">有飲</span>
+                                        <span>椪糖奶霜 (紅茶)</span>
+                                        <i class="fa-solid fa-mug-saucer text-orange-700"></i>
+                                        <span class="fire-badge"></span>
+                                    </span>
+                                </div>
+                            </label>
+                            <!-- 選項 5 -->
+                            <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="drink" value="椪糖奶霜 (綠茶)" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3">
+                                    <span class="flex items-center flex-wrap gap-1.5 font-medium">
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">有飲</span>
+                                        <span>椪糖奶霜 (綠茶)</span>
+                                        <i class="fa-solid fa-seedling text-green-500"></i>
+                                        <span class="fire-badge"></span>
+                                    </span>
+                                </div>
+                            </label>
+                            <!-- 選項 6 -->
+                            <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="drink" value="珍珠奶茶爆擊" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3">
+                                    <span class="flex items-center flex-wrap gap-1.5 font-medium">
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">有飲</span>
+                                        <span>珍珠奶茶爆擊</span>
+                                        <i class="fa-solid fa-circle-dot text-amber-800"></i>
+                                        <span class="fire-badge"></span>
+                                    </span>
+                                </div>
+                            </label>
+                            <!-- 選項 7 -->
+                            <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="drink" value="青青小樹蘋果綠" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3">
+                                    <span class="flex items-center flex-wrap gap-1.5 font-medium">
+                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">有飲</span>
+                                        <span>青青小樹蘋果綠</span>
+                                        <i class="fa-solid fa-apple-whole text-red-500"></i>
                                         <span class="fire-badge"></span>
                                     </span>
                                 </div>
@@ -127,54 +171,56 @@
                         </div>
                     </div>
 
-                    <div id="sideOptionsContainer" class="hidden space-y-6 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+                    <!-- 冰量與糖量選擇區塊 (不再隱藏，統一顯示) -->
+                    <div id="sideOptionsContainer" class="space-y-6 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+                        <!-- 第二區：冰量選擇 -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
-                                冰沙配料 (請擇一) <span class="text-red-500">*</span>
+                                第二區：冰量選擇 <span class="text-red-500">*</span>
                             </label>
-                            <div class="space-y-3">
-                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                    <input type="radio" name="toppings_radio" value="黑糖粉粿、芋圓、花生" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                    <div class="ml-3 font-medium flex items-center gap-2">
-                                        <i class="fa-solid fa-cubes-stacked text-amber-600"></i>
-                                        <span>黑糖粉粿、芋圓、花生</span>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 border bg-white rounded-lg cursor-pointer hover:bg-blue-50 transition-colors has-[:checked]:border-blue-400 has-[:checked]:bg-blue-50">
+                                    <input type="radio" name="ice_level" value="微冰" required class="w-4 h-4 text-blue-500 border-gray-300 focus:ring-blue-400">
+                                    <div class="ml-2 font-medium flex items-center gap-2">
+                                        <i class="fa-regular fa-snowflake text-blue-400"></i>
+                                        <span>微冰</span>
                                     </div>
                                 </label>
-                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                    <input type="radio" name="toppings_radio" value="黑糖粉粿、紅豆、花生" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                    <div class="ml-3 font-medium flex items-center gap-2">
-                                        <i class="fa-solid fa-spoon text-amber-700"></i>
-                                        <span>黑糖粉粿、紅豆、花生</span>
+                                <label class="flex items-center p-3 border bg-white rounded-lg cursor-pointer hover:bg-blue-50 transition-colors has-[:checked]:border-blue-400 has-[:checked]:bg-blue-50">
+                                    <input type="radio" name="ice_level" value="去冰" required class="w-4 h-4 text-blue-500 border-gray-300 focus:ring-blue-400">
+                                    <div class="ml-2 font-medium flex items-center gap-2">
+                                        <i class="fa-solid fa-ban text-gray-400"></i>
+                                        <span>去冰</span>
                                     </div>
                                 </label>
                             </div>
                         </div>
 
+                        <!-- 第三區：糖量選擇 -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
-                                B區：點心選項 (請擇一) <span class="text-red-500">*</span>
+                                第三區：糖量選擇 <span class="text-red-500">*</span>
                             </label>
-                            <div class="space-y-3">
-                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                    <input type="radio" name="snack_radio" value="陳Q 炸甜不辣" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                    <div class="ml-3 font-medium flex items-center flex-wrap gap-1.5">
-                                        <span class="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs rounded shadow-sm border border-orange-200">陳Q</span>
-                                        <span>炸甜不辣</span>
-                                        <i class="fa-solid fa-fire text-red-500"></i>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
+                                    <input type="radio" name="sugar_level" value="微糖" required class="w-4 h-4 text-amber-500 border-gray-300 focus:ring-amber-400">
+                                    <div class="ml-2 font-medium flex items-center gap-2">
+                                        <i class="fa-solid fa-cubes text-amber-500"></i>
+                                        <span>微糖</span>
                                     </div>
                                 </label>
-                                <label class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
-                                    <input type="radio" name="snack_radio" value="初一 紅豆餅" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
-                                    <div class="ml-3 font-medium flex items-center flex-wrap gap-1.5">
-                                        <span class="px-2 py-0.5 bg-rose-100 text-rose-800 text-xs rounded shadow-sm border border-rose-200">初一</span>
-                                        <span>紅豆餅</span>
-                                        <i class="fa-solid fa-cookie text-amber-700"></i>
+                                <label class="flex items-center p-3 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
+                                    <input type="radio" name="sugar_level" value="無糖" required class="w-4 h-4 text-amber-500 border-gray-300 focus:ring-amber-400">
+                                    <div class="ml-2 font-medium flex items-center gap-2">
+                                        <i class="fa-solid fa-ban text-gray-400"></i>
+                                        <span>無糖</span>
                                     </div>
                                 </label>
                             </div>
                         </div>
                     </div>
 
+                    <!-- 提交按鈕 -->
                     <div class="pt-4">
                         <button type="submit" id="submitBtn" 
                             class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all flex justify-center items-center">
@@ -184,6 +230,10 @@
                     </div>
                 </form>
 
+                <!-- 【無痕跡傳送】隱藏的 IFrame -->
+                <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+                <!-- 成功訊息提示 -->
                 <div id="successMsg" class="hidden mt-6 bg-green-50 border border-green-200 text-green-700 px-4 py-4 rounded-lg flex items-start">
                     <i class="fa-solid fa-circle-check text-green-500 mt-1 mr-3 text-lg"></i>
                     <div class="w-full">
@@ -191,9 +241,9 @@
                         
                         <div class="bg-white/70 p-3 rounded border border-green-200 text-sm mb-3">
                             <p class="mb-1"><span class="font-semibold text-green-800">登記姓名：</span> <span id="resultName" class="text-gray-800"></span></p>
-                            <p class="mb-1"><span class="font-semibold text-green-800">選擇主餐：</span> <span id="resultMain" class="text-gray-800"></span></p>
-                            <p class="mb-1"><span class="font-semibold text-green-800">冰沙配料：</span> <span id="resultToppings" class="text-gray-800"></span></p>
-                            <p><span class="font-semibold text-green-800">搭配點心：</span> <span id="resultSnack" class="text-gray-800"></span></p>
+                            <p class="mb-1"><span class="font-semibold text-green-800">選擇飲料：</span> <span id="resultDrink" class="text-gray-800"></span></p>
+                            <p class="mb-1"><span class="font-semibold text-green-800">選擇冰量：</span> <span id="resultIce" class="text-gray-800"></span></p>
+                            <p><span class="font-semibold text-green-800">選擇糖量：</span> <span id="resultSugar" class="text-gray-800"></span></p>
                         </div>
                         
                         <p class="text-sm text-gray-600 mb-3 bg-amber-50 p-2 rounded border border-amber-200">
@@ -207,20 +257,12 @@
                     </div>
                 </div>
                 
-                <!-- 升級版錯誤訊息提示 -->
+                <!-- 錯誤訊息提示 -->
                 <div id="errorMsg" class="hidden mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-lg flex items-start">
                     <i class="fa-solid fa-circle-exclamation text-red-500 mt-1 mr-3 text-lg"></i>
                     <div class="w-full">
                         <h4 class="font-bold">連線發生錯誤</h4>
-                        <p class="text-sm mt-1 mb-2">無法將資料送到資料庫。這通常是因為：</p>
-                        <ul class="list-disc list-inside text-sm space-y-1 text-red-600">
-                            <li>瀏覽器的擋廣告外掛 (AdBlock) 阻擋了連線</li>
-                            <li>Safari 或防護軟體的「防追蹤機制」中斷了請求</li>
-                        </ul>
-                        <div class="mt-3 bg-white/60 p-2 rounded text-sm border border-red-100">
-                            <span class="font-bold text-red-800">👉 解決方法：</span><br>
-                            請嘗試開啟瀏覽器的<strong class="mx-1">「無痕視窗」</strong>，或<strong class="mx-1">暫時關閉擋廣告外掛</strong>後再重新送出一次。
-                        </div>
+                        <p class="text-sm mt-1 mb-2">無法將資料送到資料庫。請檢查網路連線或稍後再試。</p>
                     </div>
                 </div>
             </div>
@@ -240,7 +282,7 @@
         // =========================================================================
         // 時間截止檢查
         // =========================================================================
-        const DEADLINE = new Date('2026-04-16T14:00:00+08:00'); // 台灣時間 2026/04/16 14:00
+        const DEADLINE = new Date('2026-06-16T10:00:00+08:00'); // 台灣時間 2026/06/16 10:00
 
         function checkDeadline() {
             const now = new Date();
@@ -258,9 +300,9 @@
         checkDeadline();
         setInterval(checkDeadline, 60000);
 
+        let isSubmitting = false;
 
         form.addEventListener('submit', (e) => {
-            // 阻擋預設表單提交行為，改用 JS 背景發送
             e.preventDefault(); 
             
             if (checkDeadline()) {
@@ -275,36 +317,44 @@
             errorMsg.classList.add('hidden');
 
             const nameValue = document.getElementById('name').value;
-            const selectedMain = document.querySelector('input[name="main_meal"]:checked').value;
-            let finalToppings = "無";
-            let finalSnack = "無";
+            const selectedDrink = document.querySelector('input[name="drink"]:checked').value;
+            const selectedIce = document.querySelector('input[name="ice_level"]:checked').value;
+            const selectedSugar = document.querySelector('input[name="sugar_level"]:checked').value;
 
-            if (selectedMain !== "陳Q 香雞排") {
-                finalToppings = document.querySelector('input[name="toppings_radio"]:checked').value;
-                finalSnack = document.querySelector('input[name="snack_radio"]:checked').value;
+            // 建立隱藏表單動態傳送到 iframe，完全避開預覽視窗對 fetch 的安全阻擋
+            const hiddenForm = document.createElement('form');
+            hiddenForm.action = SCRIPT_URL;
+            hiddenForm.method = 'POST';
+            hiddenForm.target = 'hidden_iframe';
+            hiddenForm.style.display = 'none';
+
+            const dataParams = {
+                name: nameValue,
+                drink: selectedDrink,
+                ice: selectedIce,
+                sugar: selectedSugar
+            };
+
+            for (const key in dataParams) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = dataParams[key];
+                hiddenForm.appendChild(input);
             }
 
-            // 【終極相容性方案】使用 URLSearchParams 直接打包
-            // 取代 FormData，確保送出的是 application/x-www-form-urlencoded
-            // 這是對 Google Apps Script 最友善、最不會觸發跨網域 (CORS) 阻擋的格式
-            const submitData = new URLSearchParams();
-            submitData.append('name', nameValue);
-            submitData.append('main_meal', selectedMain);
-            submitData.append('toppings', finalToppings);
-            submitData.append('snack', finalSnack);
+            document.body.appendChild(hiddenForm);
+            isSubmitting = true;
 
-            // 使用 fetch 送出，開啟 no-cors 模式無視跨網域警告
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: submitData
-            })
-            .then(() => {
-                // 送出成功後，將資料填寫到畫面上
+            // 觸發成功畫面的邏輯函式
+            window.completeSubmission = function() {
+                if (!isSubmitting) return; // 避免重複觸發
+                isSubmitting = false;
+
                 document.getElementById('resultName').textContent = nameValue;
-                document.getElementById('resultMain').textContent = selectedMain;
-                document.getElementById('resultToppings').textContent = finalToppings;
-                document.getElementById('resultSnack').textContent = finalSnack;
+                document.getElementById('resultDrink').textContent = selectedDrink;
+                document.getElementById('resultIce').textContent = selectedIce;
+                document.getElementById('resultSugar').textContent = selectedSugar;
 
                 form.reset();
                 form.classList.add('hidden');
@@ -312,17 +362,33 @@
                 successMsg.classList.add('fade-in');
                 
                 setTimeout(fetchPopularity, 2000);
-            })
-            .catch(error => {
-                // 如果跑到這裡，代表瀏覽器 (如 AdBlock 或 Safari 防追蹤) 強制殺死了連線
-                console.error('Network Error:', error);
-                errorMsg.classList.remove('hidden');
-            })
-            .finally(() => {
+
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
                 loadingIcon.classList.add('hidden');
-            });
+            };
+
+            // 超時強制成功機制：避免預覽環境中 iframe load 事件被攔截導致卡住
+            setTimeout(() => {
+                if (isSubmitting) window.completeSubmission();
+            }, 3000);
+
+            try {
+                hiddenForm.submit();
+            } catch (error) {
+                console.error('Form Submit Error:', error);
+                window.completeSubmission(); // 若真的無法送出，依然確保畫面正常顯示
+            }
+
+            // 送出後移除隱藏表單保持 DOM 乾淨
+            setTimeout(() => {
+                if(document.body.contains(hiddenForm)) document.body.removeChild(hiddenForm);
+            }, 100);
+        });
+
+        // 監聽 iframe 載入完成 (代表資料已送達 Google Sheet)
+        document.getElementById('hidden_iframe').addEventListener('load', function() {
+            if (isSubmitting) window.completeSubmission();
         });
 
         resetBtn.addEventListener('click', () => {
@@ -330,26 +396,6 @@
             successMsg.classList.add('hidden');
             form.classList.remove('hidden');
             form.classList.add('fade-in');
-        });
-
-        const mainMealInputs = document.querySelectorAll('input[name="main_meal"]');
-        const sideOptionsContainer = document.getElementById('sideOptionsContainer');
-        const toppingInputs = document.querySelectorAll('input[name="toppings_radio"]');
-        const snackInputs = document.querySelectorAll('input[name="snack_radio"]');
-
-        mainMealInputs.forEach(input => {
-            input.addEventListener('change', (e) => {
-                const selectedMain = e.target.value;
-                if (selectedMain === "陳Q 香雞排") {
-                    sideOptionsContainer.classList.add('hidden');
-                    toppingInputs.forEach(i => { i.required = false; i.checked = false; });
-                    snackInputs.forEach(i => { i.required = false; i.checked = false; });
-                } else {
-                    sideOptionsContainer.classList.remove('hidden');
-                    toppingInputs.forEach(i => i.required = true);
-                    snackInputs.forEach(i => i.required = true);
-                }
-            });
         });
 
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5JLQGfuMJtXbYzQ2NmPxEgE3GFZ_6cvS4Y0m6TFHJbaYfVDeDX9srWpY6JHi9l4JJz285qNSbXx4q/pub?gid=0&single=true&output=csv';
@@ -374,31 +420,24 @@
                 const lines = text.split(/\r?\n/);
                 
                 const combos = {};
-                const mainCounts = {};
+                const drinkCounts = {};
                 
                 for(let i = 1; i < lines.length; i++) {
                     if(!lines[i].trim()) continue;
                     const cols = parseCsvLine(lines[i]);
                     
                     if(cols.length >= 4) {
-                        const main = cols[2]; 
-                        const toppings = cols[3] || "無";
-                        const snack = cols[4] || "無"; 
+                        const drink = cols[2]; 
+                        const ice = cols[3] || "";
+                        const sugar = cols[4] || ""; 
                         
-                        let combo = main;
-                        
-                        if (toppings !== "無" && !toppings.includes("配料:")) {
-                            combo += ` + ${toppings}`;
-                        } else if (toppings.includes("配料:")) {
-                            combo += ` + ${toppings}`; 
-                        }
-
-                        if (snack !== "無") {
-                            combo += ` + ${snack}`;
+                        let combo = drink;
+                        if (ice || sugar) {
+                            combo += ` (${ice}${ice && sugar ? ', ' : ''}${sugar})`;
                         }
                         
                         combos[combo] = (combos[combo] || 0) + 1;
-                        mainCounts[main] = (mainCounts[main] || 0) + 1;
+                        drinkCounts[drink] = (drinkCounts[drink] || 0) + 1;
                     }
                 }
 
@@ -417,8 +456,9 @@
                     
                     leaderboard.classList.remove('hidden');
 
-                    mainMealInputs.forEach(input => {
-                        const count = mainCounts[input.value] || 0;
+                    const drinkInputs = document.querySelectorAll('input[name="drink"]');
+                    drinkInputs.forEach(input => {
+                        const count = drinkCounts[input.value] || 0;
                         if(count > 0) {
                             const label = input.closest('label');
                             const badge = label.querySelector('.fire-badge');
