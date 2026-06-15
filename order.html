@@ -32,17 +32,23 @@
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-200 mb-4 text-3xl shadow-sm">
                 🧋
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">06/16(二) 有飲 飲料訂購</h1>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">06/16 & 06/17 有飲 訂購</h1>
             <p class="text-gray-600 mb-4">請填寫您的全名與飲料搭配，慰勞一下辛苦的自己吧！<br>
             <span class="text-amber-600 font-medium text-sm">（若真的沒有想法也可以棄填，將由小助理協助搭配唷~）</span></p>
             
             <!-- 醒目截止時間提示 -->
-            <div class="inline-flex items-center justify-center px-5 py-2.5 bg-red-100 text-red-700 rounded-full font-bold shadow-sm border border-red-200 fade-in animate-pulse">
-                <i class="fa-regular fa-clock mr-2 text-lg"></i>
-                <span>點餐時間至 2026.06.16 (二) 10:00 截止</span>
+            <div class="inline-flex flex-col items-center justify-center px-5 py-3 bg-red-100 text-red-700 rounded-xl font-bold shadow-sm border border-red-200 fade-in animate-pulse">
+                <div class="flex items-center mb-1">
+                    <i class="fa-regular fa-clock mr-2 text-lg"></i>
+                    <span>各日午茶點餐截止時間：</span>
+                </div>
+                <div class="text-sm font-medium">
+                    <span class="block">06/16(二) 訂單 👉 至 06/16 10:00 截止</span>
+                    <span class="block">06/17(三) 訂單 👉 至 06/17 10:00 截止</span>
+                </div>
             </div>
 
-            <!-- 新增：手機點餐強制提醒 -->
+            <!-- 手機點餐強制提醒 -->
             <div class="mt-5 bg-orange-50 border border-orange-200 p-4 text-left shadow-sm rounded-lg fade-in">
                 <div class="flex items-start">
                     <i class="fa-solid fa-mobile-screen-button text-orange-500 mt-0.5 mr-3 text-xl"></i>
@@ -67,12 +73,12 @@
         <!-- 表單區塊 -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden fade-in relative">
             
-            <!-- 逾期覆蓋層 (預設隱藏) -->
+            <!-- 逾期覆蓋層 (預設隱藏 - 全部截止時顯示) -->
             <div id="timeoutOverlay" class="hidden absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
                 <div class="bg-gray-100 border border-gray-300 p-6 rounded-2xl text-center shadow-lg transform -translate-y-4">
                     <i class="fa-solid fa-lock text-4xl text-gray-400 mb-3"></i>
-                    <h2 class="text-xl font-bold text-gray-700 mb-1">表單已截止</h2>
-                    <p class="text-gray-500 text-sm">點餐時間已過，若需修改請直接聯繫小助理</p>
+                    <h2 class="text-xl font-bold text-gray-700 mb-1">全數表單已截止</h2>
+                    <p class="text-gray-500 text-sm">兩日的點餐時間皆已過，若需修改請直接聯繫小助理</p>
                 </div>
             </div>
 
@@ -89,13 +95,37 @@
                         <p class="text-xs text-red-500 mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>請務必填寫正確，否則無法提供客製化餐點</p>
                     </div>
 
-                    <!-- 第一區：飲料選擇 -->
+                    <!-- 【新增】第一區：享用日期選擇 -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-3">
-                            第一區：飲料選項 (請擇一) <span class="text-red-500">*</span>
+                            第一區：選擇享用日期 <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <label id="label_date_1" class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="order_date" value="06/16 (二)" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3 font-medium flex items-center">
+                                    <i class="fa-regular fa-calendar-check text-amber-600 mr-2"></i>
+                                    <span>06/16 (二)</span>
+                                    <span id="badge_date_1" class="hidden ml-2 px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded border border-red-200">已截止</span>
+                                </div>
+                            </label>
+                            <label id="label_date_2" class="flex items-center p-4 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
+                                <input type="radio" name="order_date" value="06/17 (三)" required class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div class="ml-3 font-medium flex items-center">
+                                    <i class="fa-regular fa-calendar-check text-amber-600 mr-2"></i>
+                                    <span>06/17 (三)</span>
+                                    <span id="badge_date_2" class="hidden ml-2 px-2 py-0.5 bg-red-100 text-red-600 text-xs rounded border border-red-200">已截止</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 第二區：飲料選擇 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            第二區：飲料選項 (請擇一) <span class="text-red-500">*</span>
                         </label>
                         <div class="space-y-3">
-                            <!-- 選項 1 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
                                 <input type="radio" name="drink" value="焦香椪糖紅茶" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
@@ -107,7 +137,6 @@
                                     </span>
                                 </div>
                             </label>
-                            <!-- 選項 2 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
                                 <input type="radio" name="drink" value="焦香椪糖四季春" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
@@ -119,7 +148,6 @@
                                     </span>
                                 </div>
                             </label>
-                            <!-- 選項 3 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
                                 <input type="radio" name="drink" value="玫瑰鹽奶霜四季春" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
@@ -131,7 +159,6 @@
                                     </span>
                                 </div>
                             </label>
-                            <!-- 選項 4 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
                                 <input type="radio" name="drink" value="椪糖奶霜 (紅茶)" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
@@ -143,7 +170,6 @@
                                     </span>
                                 </div>
                             </label>
-                            <!-- 選項 5 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
                                 <input type="radio" name="drink" value="椪糖奶霜 (綠茶)" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
@@ -155,7 +181,6 @@
                                     </span>
                                 </div>
                             </label>
-                            <!-- 選項 6 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
                                 <input type="radio" name="drink" value="珍珠奶茶爆擊" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
@@ -167,7 +192,6 @@
                                     </span>
                                 </div>
                             </label>
-                            <!-- 選項 7 -->
                             <label class="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50">
                                 <input type="radio" name="drink" value="青青小樹蘋果綠" required class="w-4 h-4 mt-1 text-amber-600 border-gray-300 focus:ring-amber-500">
                                 <div class="ml-3">
@@ -182,12 +206,12 @@
                         </div>
                     </div>
 
-                    <!-- 冰量與糖量選擇區塊 (不再隱藏，統一顯示) -->
+                    <!-- 冰量與糖量選擇區塊 -->
                     <div id="sideOptionsContainer" class="space-y-6 bg-amber-50/50 p-4 rounded-xl border border-amber-100">
-                        <!-- 第二區：冰量選擇 -->
+                        <!-- 第三區：冰量選擇 -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
-                                第二區：冰量選擇 <span class="text-red-500">*</span>
+                                第三區：冰量選擇 <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 gap-3">
                                 <label class="flex items-center p-3 border bg-white rounded-lg cursor-pointer hover:bg-blue-50 transition-colors has-[:checked]:border-blue-400 has-[:checked]:bg-blue-50">
@@ -207,10 +231,10 @@
                             </div>
                         </div>
 
-                        <!-- 第三區：糖量選擇 -->
+                        <!-- 第四區：糖量選擇 -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-3">
-                                第三區：糖量選擇 <span class="text-red-500">*</span>
+                                第四區：糖量選擇 <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 gap-3">
                                 <label class="flex items-center p-3 border bg-white rounded-lg cursor-pointer hover:bg-amber-50 transition-colors has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50">
@@ -252,6 +276,7 @@
                         
                         <div class="bg-white/70 p-3 rounded border border-green-200 text-sm mb-3">
                             <p class="mb-1"><span class="font-semibold text-green-800">登記姓名：</span> <span id="resultName" class="text-gray-800"></span></p>
+                            <p class="mb-1"><span class="font-semibold text-green-800">享用日期：</span> <span id="resultDate" class="text-gray-800 font-bold"></span></p>
                             <p class="mb-1"><span class="font-semibold text-green-800">選擇飲料：</span> <span id="resultDrink" class="text-gray-800"></span></p>
                             <p class="mb-1"><span class="font-semibold text-green-800">選擇冰量：</span> <span id="resultIce" class="text-gray-800"></span></p>
                             <p><span class="font-semibold text-green-800">選擇糖量：</span> <span id="resultSugar" class="text-gray-800"></span></p>
@@ -281,6 +306,7 @@
     </div>
 
     <script>
+        // ======= 【請替換您的 Google Apps Script 網址】 =======
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXUCCMEsXSiTqWimlr288YLdgw48OuPRXEsFavx1BOKNxt3hrM5ApfR1uR-_ts4_KO/exec';
         
         const form = document.getElementById('orderForm');
@@ -291,25 +317,42 @@
         const resetBtn = document.getElementById('resetBtn');
 
         // =========================================================================
-        // 時間截止檢查
+        // 分離時間截止檢查 (6/16 及 6/17 分別截止)
         // =========================================================================
-        const DEADLINE = new Date('2026-06-16T10:00:00+08:00'); // 台灣時間 2026/06/16 10:00
+        const DEADLINE_1 = new Date('2026-06-16T10:00:00+08:00'); // 台灣時間 2026/06/16 10:00
+        const DEADLINE_2 = new Date('2026-06-17T10:00:00+08:00'); // 台灣時間 2026/06/17 10:00
 
         function checkDeadline() {
             const now = new Date();
-            if (now > DEADLINE) {
+            let isAllClosed = false;
+
+            // 檢查 6/16 是否已經截止
+            if (now > DEADLINE_1) {
+                const date1Input = document.querySelector('input[name="order_date"][value="06/16 (二)"]');
+                if (date1Input && !date1Input.disabled) {
+                    date1Input.disabled = true;
+                    if (date1Input.checked) date1Input.checked = false; // 取消選取
+                    document.getElementById('label_date_1').classList.add('opacity-50', 'bg-gray-100', 'cursor-not-allowed');
+                    document.getElementById('label_date_1').classList.remove('cursor-pointer', 'hover:bg-amber-50');
+                    document.getElementById('badge_date_1').classList.remove('hidden');
+                }
+            }
+
+            // 檢查 6/17 是否已經截止 (若超過則代表整個表單全數截止)
+            if (now > DEADLINE_2) {
                 document.getElementById('formWrapper').classList.add('form-disabled');
                 document.getElementById('timeoutOverlay').classList.remove('hidden');
                 
                 const allInputs = form.querySelectorAll('input, button');
                 allInputs.forEach(el => el.disabled = true);
-                return true; 
+                isAllClosed = true;
             }
-            return false; 
+            
+            return isAllClosed;
         }
 
         checkDeadline();
-        setInterval(checkDeadline, 60000);
+        setInterval(checkDeadline, 60000); // 每分鐘背景檢查
 
         let isSubmitting = false;
 
@@ -317,7 +360,13 @@
             e.preventDefault(); 
             
             if (checkDeadline()) {
-                alert("抱歉，點餐時間已截止！");
+                alert("抱歉，所有點餐時間皆已截止！");
+                return;
+            }
+
+            const selectedDateElement = document.querySelector('input[name="order_date"]:checked');
+            if (!selectedDateElement) {
+                alert("請選擇尚未截止的享用日期！");
                 return;
             }
             
@@ -328,19 +377,22 @@
             errorMsg.classList.add('hidden');
 
             const nameValue = document.getElementById('name').value;
+            const selectedDate = selectedDateElement.value;
             const selectedDrink = document.querySelector('input[name="drink"]:checked').value;
             const selectedIce = document.querySelector('input[name="ice_level"]:checked').value;
             const selectedSugar = document.querySelector('input[name="sugar_level"]:checked').value;
 
-            // 建立隱藏表單動態傳送到 iframe，完全避開預覽視窗對 fetch 的安全阻擋
+            // 建立隱藏表單動態傳送到 iframe
             const hiddenForm = document.createElement('form');
             hiddenForm.action = SCRIPT_URL;
             hiddenForm.method = 'POST';
             hiddenForm.target = 'hidden_iframe';
             hiddenForm.style.display = 'none';
 
+            // 加入所有要傳送的參數，注意有新增 'date' 欄位
             const dataParams = {
                 name: nameValue,
+                date: selectedDate,
                 drink: selectedDrink,
                 ice: selectedIce,
                 sugar: selectedSugar
@@ -359,10 +411,11 @@
 
             // 觸發成功畫面的邏輯函式
             window.completeSubmission = function() {
-                if (!isSubmitting) return; // 避免重複觸發
+                if (!isSubmitting) return; 
                 isSubmitting = false;
 
                 document.getElementById('resultName').textContent = nameValue;
+                document.getElementById('resultDate').textContent = selectedDate;
                 document.getElementById('resultDrink').textContent = selectedDrink;
                 document.getElementById('resultIce').textContent = selectedIce;
                 document.getElementById('resultSugar').textContent = selectedSugar;
@@ -379,7 +432,7 @@
                 loadingIcon.classList.add('hidden');
             };
 
-            // 超時強制成功機制：避免預覽環境中 iframe load 事件被攔截導致卡住
+            // 超時強制成功機制
             setTimeout(() => {
                 if (isSubmitting) window.completeSubmission();
             }, 3000);
@@ -388,16 +441,15 @@
                 hiddenForm.submit();
             } catch (error) {
                 console.error('Form Submit Error:', error);
-                window.completeSubmission(); // 若真的無法送出，依然確保畫面正常顯示
+                window.completeSubmission();
             }
 
-            // 送出後移除隱藏表單保持 DOM 乾淨
             setTimeout(() => {
                 if(document.body.contains(hiddenForm)) document.body.removeChild(hiddenForm);
             }, 100);
         });
 
-        // 監聽 iframe 載入完成 (代表資料已送達 Google Sheet)
+        // 監聽 iframe 載入完成
         document.getElementById('hidden_iframe').addEventListener('load', function() {
             if (isSubmitting) window.completeSubmission();
         });
@@ -437,18 +489,21 @@
                     if(!lines[i].trim()) continue;
                     const cols = parseCsvLine(lines[i]);
                     
-                    if(cols.length >= 4) {
-                        const drink = cols[2]; 
-                        const ice = cols[3] || "";
-                        const sugar = cols[4] || ""; 
+                    // 因為新增了日期欄位，欄位順序往後移
+                    if(cols.length >= 5) {
+                        const drink = cols[3]; // 原本是 cols[2]，因為新增日期變 cols[3]
+                        const ice = cols[4] || "";
+                        const sugar = cols[5] || ""; 
                         
-                        let combo = drink;
-                        if (ice || sugar) {
-                            combo += ` (${ice}${ice && sugar ? ', ' : ''}${sugar})`;
+                        if(drink) {
+                            let combo = drink;
+                            if (ice || sugar) {
+                                combo += ` (${ice}${ice && sugar ? ', ' : ''}${sugar})`;
+                            }
+                            
+                            combos[combo] = (combos[combo] || 0) + 1;
+                            drinkCounts[drink] = (drinkCounts[drink] || 0) + 1;
                         }
-                        
-                        combos[combo] = (combos[combo] || 0) + 1;
-                        drinkCounts[drink] = (drinkCounts[drink] || 0) + 1;
                     }
                 }
 
