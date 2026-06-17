@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>客服部 KPI 儀表板</title>
+    <!-- 固定 CDN 版本號，確保網頁長期穩定運作 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
         
@@ -85,6 +86,9 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        /* @jsx React.createElement */
+        /* @jsxFrag React.Fragment */
+        
         const { useState, useEffect, useRef } = React;
 
         // --- 內建圖標組件 ---
@@ -301,7 +305,6 @@
         const SettingsModal = ({ isOpen, onClose, data, onSave }) => {
             const [localData, setLocalData] = useState(data);
             const [activeTab, setActiveTab] = useState('manual');
-            // 修改：設定預設 URL 為正確的 CSV 格式連結
             const [csvUrl, setCsvUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRH4vNN6J-LaUwVWJhukAaqOZtn9OIymXNN3qaPk7Acdhso-rkAXGMFqDg7cNOA1yzJmKeoGKZKDzGt/pub?gid=0&single=true&output=csv');
             const [csvError, setCsvError] = useState('');
 
@@ -334,14 +337,12 @@
                 reader.readAsText(file);
             };
 
-            // 新增：處理 Logo 上傳
             const handleLogoUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
 
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    // 將圖片轉為 Base64 字串存入資料中
                     handleChange('logo', event.target.result);
                 };
                 reader.readAsDataURL(file);
@@ -353,20 +354,17 @@
                     let text = '';
 
                     try {
-                        // 1. 嘗試直接讀取
                         const response = await fetch(csvUrl);
                         if (!response.ok) throw new Error('Direct fetch failed');
                         text = await response.text();
                     } catch (e) {
                         console.log("直接讀取失敗，嘗試使用 CORS Proxy...");
-                        // 2. 如果失敗 (CORS 錯誤)，使用 CORS Proxy (AllOrigins)
                         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(csvUrl)}`;
                         const response = await fetch(proxyUrl);
                         if (!response.ok) throw new Error('無法讀取網址，請確認連結是否正確且已公開發布');
                         text = await response.text();
                     }
                     
-                    // 檢查是否誤用到 HTML 連結
                     if (text.trim().toLowerCase().startsWith('<!doctype') || text.includes('<html')) {
                         throw new Error('格式錯誤：您使用的是「網頁」發布連結，請重新發布並選擇「逗號分隔值 (.csv)」格式。');
                     }
@@ -421,8 +419,8 @@
                     if (cols.length < 11) throw new Error(`欄位數量不足 (偵測到 ${cols.length} 欄，需要至少 11 欄)`);
 
                     const newData = {
-                        ...localData, // 保留原有的設定 (如 Logo)
-                        dateRange: cols[0] || calculateAutoDateRange(), // 修改：若 CSV 的日期欄位為空，則使用自動計算的日期
+                        ...localData,
+                        dateRange: cols[0] || calculateAutoDateRange(),
                         totalBonus: cols[1],
                         kpi1: { value: cleanNumber(cols[2]), bonus: cols[3] },
                         kpi2: { value: cleanNumber(cols[4]), bonus: cols[5] },
@@ -480,7 +478,6 @@
                             >
                                 Google Sheet
                             </button>
-                            {/* 新增 Logo Tab */}
                             <button 
                                 className={`flex-1 py-3 font-medium transition-colors ${activeTab === 'logo' ? 'text-blue-400 border-b-2 border-blue-400 bg-slate-700/50' : 'text-slate-400 hover:bg-slate-700/30'}`}
                                 onClick={() => setActiveTab('logo')}
@@ -512,7 +509,7 @@
                                                 type="text" 
                                                 value={localData.dateRange} 
                                                 onChange={(e) => handleChange('dateRange', e.target.value)} 
-                                                placeholder={`預設: ${calculateAutoDateRange()}`} // 加入預設提示
+                                                placeholder={`預設: ${calculateAutoDateRange()}`}
                                                 className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white" 
                                             />
                                             <p className="text-xs text-slate-500 mt-1">留空將自動顯示當月累積日期</p>
@@ -615,7 +612,7 @@
                                             </button>
                                         </div>
                                         <p className="text-xs text-slate-500 mt-2">
-                                            請至 Google Sheet > 檔案 > 分享 > 發布到網路 > 選擇格式為 CSV
+                                            請至 Google Sheet &gt; 檔案 &gt; 分享 &gt; 發布到網路 &gt; 選擇格式為 CSV
                                         </p>
                                     </div>
                                     {csvError && <p className="text-red-400 text-sm">{csvError}</p>}
@@ -628,7 +625,6 @@
                                 </div>
                             )}
 
-                            {/* 新增 Logo 設定頁面 */}
                             {activeTab === 'logo' && (
                                 <div className="space-y-6 text-center py-8">
                                     <div className="mb-4">
@@ -695,7 +691,6 @@
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
             const [time, setTime] = useState(new Date());
 
-            // 修改：升級到 v5 以確保新 Logo 生效
             useEffect(() => {
                 const savedData = localStorage.getItem('kpi_dashboard_data_v5');
                 if (savedData) {
@@ -711,7 +706,6 @@
                 }
             }, []);
 
-            // 修改：儲存到 v5
             const handleSaveData = (newData) => {
                 if (!newData.dateRange) newData.dateRange = calculateAutoDateRange();
                 setData(newData);
