@@ -65,6 +65,27 @@
 
         <!-- ================= 分頁 1: 儀表板 ================= -->
         <div id="tab-dashboard" class="space-y-6">
+            
+            <!-- ETF持股規模卡片 -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-xl shadow-md text-white flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <div class="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <i data-lucide="pie-chart" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-indigo-100 text-sm font-medium mb-1">ETF 持股總規模 (含各類型ETF)</p>
+                        <div id="statTotalETFValue" class="text-3xl font-bold tracking-tight">0</div>
+                    </div>
+                </div>
+                <div class="text-left md:text-right w-full md:w-auto border-t border-white/20 md:border-t-0 pt-4 md:pt-0">
+                    <p class="text-indigo-100 text-sm font-medium mb-1">佔整體投資組合比重</p>
+                    <div class="flex items-baseline md:justify-end gap-2">
+                        <div id="statETFRatio" class="text-3xl font-bold tracking-tight text-white">0%</div>
+                        <div class="text-indigo-200 text-sm font-medium">/ 總資產 <span id="statTotalPortfolioValue">0</span></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 摘要數據卡片 (針對主動型 ETF) -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
@@ -149,7 +170,7 @@
                     <div class="p-6 border-b border-slate-100 bg-slate-50">
                         <h2 class="text-lg font-semibold text-slate-800">您持有的主動式 ETF 目前市值排名</h2>
                         <div class="text-xs text-slate-500 mt-2 flex flex-wrap items-center gap-4">
-                            <span>依據解析到的市值(億)由大至小排序。</span>
+                            <span>點擊表頭可切換排序。預設依據解析到的市值(億)由大至小排序。</span>
                             <span class="flex items-center gap-1.5 font-medium text-amber-700 bg-amber-100/50 px-2 py-1 rounded">
                                 <span class="w-3 h-3 inline-block bg-amber-100 border border-amber-300 rounded-sm"></span> 低於 200 億 (觀察名單)
                             </span>
@@ -160,15 +181,8 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-slate-100 text-slate-600 font-medium">
-                                <tr>
-                                    <th class="px-6 py-3 border-b border-slate-200">排名</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">證券代號</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">標的名稱</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">庫存數量</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">庫存成本</th>
-                                    <th class="px-6 py-3 border-b border-slate-200 bg-indigo-50 text-indigo-700">最新總市值(億)</th>
-                                </tr>
+                            <thead id="heldComparisonHead" class="bg-slate-100 text-slate-600 font-medium">
+                                <!-- 動態生成 -->
                             </thead>
                             <tbody id="heldComparisonBody" class="divide-y divide-slate-100">
                                 <!-- 動態生成 -->
@@ -182,7 +196,7 @@
                     <div class="p-6 border-b border-slate-100 bg-slate-50">
                         <h2 class="text-lg font-semibold text-slate-800">您持有的「其他類型」ETF 目前市值排名</h2>
                         <div class="text-xs text-slate-500 mt-2 flex flex-wrap items-center gap-4">
-                            <span>自動比對貼上資料，列出您庫存中非主動式的 ETF，並由大至小排序。</span>
+                            <span>點擊表頭可切換排序。自動比對貼上資料列出您庫存中非主動式的 ETF。</span>
                             <span class="flex items-center gap-1.5 font-medium text-amber-700 bg-amber-100/50 px-2 py-1 rounded">
                                 <span class="w-3 h-3 inline-block bg-amber-100 border border-amber-300 rounded-sm"></span> 低於 200 億 (觀察名單)
                             </span>
@@ -193,15 +207,8 @@
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-slate-100 text-slate-600 font-medium">
-                                <tr>
-                                    <th class="px-6 py-3 border-b border-slate-200">排名</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">證券代號</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">標的名稱</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">庫存數量</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">庫存成本</th>
-                                    <th class="px-6 py-3 border-b border-slate-200 bg-indigo-50 text-indigo-700">最新總市值(億)</th>
-                                </tr>
+                            <thead id="otherHeldComparisonHead" class="bg-slate-100 text-slate-600 font-medium">
+                                <!-- 動態生成 -->
                             </thead>
                             <tbody id="otherHeldComparisonBody" class="divide-y divide-slate-100">
                                 <!-- 動態生成 -->
@@ -216,16 +223,12 @@
                         <h2 class="text-lg font-semibold text-amber-800 flex items-center gap-2">
                             <i data-lucide="lightbulb" class="w-5 h-5 text-amber-500"></i> 潛力標的探索 (未持有)
                         </h2>
-                        <p class="text-xs text-amber-600 mt-1">條件：代碼為 A 結尾、名稱為「主動」開頭、市值規模大於 180 億，且您目前未持有。</p>
+                        <p class="text-xs text-amber-600 mt-1">條件：代碼為 A 結尾、名稱為「主動」開頭、市值規模大於 180 億，且您目前未持有。點擊表頭可切換排序。</p>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left whitespace-nowrap">
-                            <thead class="bg-slate-50 text-slate-600 font-medium">
-                                <tr>
-                                    <th class="px-6 py-3 border-b border-slate-200">證券代號</th>
-                                    <th class="px-6 py-3 border-b border-slate-200">標的名稱</th>
-                                    <th class="px-6 py-3 border-b border-slate-200 text-amber-700">最新總市值(億)</th>
-                                </tr>
+                            <thead id="potentialTargetsHead" class="bg-slate-50 text-slate-600 font-medium">
+                                <!-- 動態生成 -->
                             </thead>
                             <tbody id="potentialTargetsBody" class="divide-y divide-slate-100">
                                 <!-- 動態生成 -->
@@ -249,9 +252,17 @@
         let allocationData = []; // 整體資產配置的資料
         let globalMarketData = {}; // 存放解析後的市場資料
         
-        // 排序狀態
+        // 排序狀態 (主動式明細表)
         let sortCol = null;
         let sortAsc = true;
+
+        // 排序狀態 (市值比對分頁)
+        let compHeldData = [];
+        let compOtherData = [];
+        let compPotentialData = [];
+        let sortCompHeld = { col: 'extCap', asc: false };
+        let sortCompOther = { col: 'extCap', asc: false };
+        let sortCompPotential = { col: 'cap', asc: false };
 
         // 顏色常數 (供柱狀圖使用)
         const COLORS = [
@@ -336,15 +347,31 @@
                 // 儲存全庫存資料供後續市值比對時尋找「其他 ETF」使用
                 allHoldingsData = parsed.data;
 
-                // --- 步驟 A：計算整體資產配置占比 (包含所有股票類型) ---
+                // --- 步驟 A：計算整體資產配置占比 (包含所有股票類型) 與 ETF 總市值 ---
+                colKeys = {
+                    ticker: findColumn(parsed.headers, ['代號', '代碼']) || parsed.headers[0],
+                    name: findColumn(parsed.headers, ['名稱', '標的', '商品', 'ETF']) || parsed.headers[1],
+                    shares: findColumn(parsed.headers, ['合計股數', '股數', '張數', '庫存', '數量']), 
+                    cost: findColumn(parsed.headers, ['庫存成本', '總成本', '投入', '成本', '金額']), 
+                    value: findColumn(parsed.headers, ['市值', '現值', '總值']),
+                    pnl: findColumn(parsed.headers, ['損益', '獲利', '報酬額']),
+                    pnlPercent: findColumn(parsed.headers, ['報酬率', '%', '損益率'])
+                };
+
+                // 防呆：如果代碼和名稱抓到同一個欄位，強制錯開
+                if (colKeys.ticker === colKeys.name && parsed.headers.length > 1) {
+                    colKeys.ticker = parsed.headers[0];
+                    colKeys.name = parsed.headers[1];
+                }
+
                 const tempTypeCol = findColumn(parsed.headers, ['股票類型', '類型', '分類']) || '股票類型';
-                const tempValCol = findColumn(parsed.headers, ['市值', '現值', '總值']);
                 
                 let totalPortfolioValue = 0;
+                let totalETFValue = 0;
                 const typeMap = {};
 
                 parsed.data.forEach(row => {
-                    const v = parseNumber(row[tempValCol]);
+                    const v = parseNumber(row[colKeys.value]);
                     if (v > 0) {
                         let t = row[tempTypeCol] || '其他';
                         if (t === '主動型 ETF') t = '主動式 ETF'; // 名稱優化
@@ -353,8 +380,18 @@
                         totalPortfolioValue += v;
                         if (!typeMap[t]) typeMap[t] = 0;
                         typeMap[t] += v;
+
+                        // 判斷是否為 ETF (代碼00開頭或類型包含ETF/高股息/市值型/債券)
+                        const tickerStr = (row[colKeys.ticker] || '').toString().trim();
+                        const typeStr = (row[tempTypeCol] || '').toString().toUpperCase();
+                        if (tickerStr.startsWith('00') || typeStr.includes('ETF') || typeStr.includes('高股息') || typeStr.includes('市值型') || typeStr.includes('債')) {
+                            totalETFValue += v;
+                        }
                     }
                 });
+
+                window.totalPortfolioValue = totalPortfolioValue;
+                window.totalETFValue = totalETFValue;
 
                 allocationData = Object.keys(typeMap).map(type => ({
                     type: type,
@@ -454,6 +491,12 @@
 
         function updateDashboard() {
             const stats = calculateStats();
+
+            // 更新 ETF 總規模卡片
+            document.getElementById('statTotalETFValue').textContent = formatCurrency(window.totalETFValue);
+            document.getElementById('statTotalPortfolioValue').textContent = formatCurrency(window.totalPortfolioValue);
+            const etfRatio = window.totalPortfolioValue > 0 ? (window.totalETFValue / window.totalPortfolioValue) * 100 : 0;
+            document.getElementById('statETFRatio').textContent = etfRatio.toFixed(1) + '%';
             
             // 1. 更新卡片
             document.getElementById('statCost').textContent = formatCurrency(stats.totalCost);
@@ -824,7 +867,7 @@
             document.getElementById('comparisonResults').classList.remove('hidden');
 
             // 1. 計算持有明細 (附加外部市值)
-            let heldData = appData.map(row => {
+            compHeldData = appData.map(row => {
                 const tickerStr = (row[colKeys.ticker] || '').replace(/[^0-9A-Za-z]/g, '');
                 const marketInfo = globalMarketData[tickerStr] || { cap: 0 };
                 return {
@@ -836,47 +879,15 @@
                 };
             });
 
-            // 依據市值由大至小排序
-            heldData.sort((a, b) => b.extCap - a.extCap);
-
-            let heldHTML = '';
-            heldData.forEach((item, idx) => {
-                const extCapDisplay = item.extCap > 0 ? item.extCap.toLocaleString('zh-TW', {minimumFractionDigits: 2}) : '-';
-                
-                // 判斷市值落點給予相對應的顏色與圖示
-                let rowClass = "hover:bg-slate-50 transition-colors";
-                let warningIcon = "";
-                
-                if (item.extCap > 0 && item.extCap < 100) {
-                    rowClass = "bg-red-50 hover:bg-red-100 transition-colors text-red-900";
-                    warningIcon = `<i data-lucide="alert-triangle" class="inline w-4 h-4 text-red-500 mr-1 relative -top-[1px]"></i>`;
-                } else if (item.extCap >= 100 && item.extCap < 200) {
-                    rowClass = "bg-amber-50 hover:bg-amber-100 transition-colors text-amber-900";
-                    warningIcon = `<i data-lucide="alert-circle" class="inline w-4 h-4 text-amber-500 mr-1 relative -top-[1px]"></i>`;
-                }
-
-                heldHTML += `
-                    <tr class="${rowClass}">
-                        <td class="px-6 py-3 text-slate-500 border-b border-slate-100">${idx + 1}</td>
-                        <td class="px-6 py-3 font-medium border-b border-slate-100">${item.ticker}</td>
-                        <td class="px-6 py-3 border-b border-slate-100">${warningIcon}${item.name}</td>
-                        <td class="px-6 py-3 border-b border-slate-100">${item.shares.toLocaleString('zh-TW')}</td>
-                        <td class="px-6 py-3 border-b border-slate-100">${formatCurrency(item.cost)}</td>
-                        <td class="px-6 py-3 font-bold ${item.extCap < 200 ? '' : 'text-indigo-600 bg-indigo-50/50'} border-b border-slate-100">${extCapDisplay}</td>
-                    </tr>
-                `;
-            });
-            document.getElementById('heldComparisonBody').innerHTML = heldHTML;
-
             // 2. 計算其他持有 ETF (比對全庫存與市場資料)
             const activeTickers = new Set(appData.map(row => (row[colKeys.ticker] || '').replace(/[^0-9A-Za-z]/g, '')));
-            let otherHeldData = [];
+            compOtherData = [];
             
             allHoldingsData.forEach(row => {
                 const tickerStr = (row[colKeys.ticker] || '').replace(/[^0-9A-Za-z]/g, '');
                 // 條件：代碼有值、存在於貼上的 ETF 名單中、且不在主動式 ETF 名單中
                 if (tickerStr && globalMarketData[tickerStr] && !activeTickers.has(tickerStr)) {
-                    otherHeldData.push({
+                    compOtherData.push({
                         ticker: row[colKeys.ticker],
                         name: row[colKeys.name] || globalMarketData[tickerStr].name,
                         shares: row[colKeys.shares] ? parseNumber(row[colKeys.shares]) : 0,
@@ -886,44 +897,9 @@
                 }
             });
 
-            // 依據市值由大至小排序
-            otherHeldData.sort((a, b) => b.extCap - a.extCap);
-
-            let otherHeldHTML = '';
-            if (otherHeldData.length === 0) {
-                otherHeldHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-400">您的庫存中沒有找到符合排行榜的其他 ETF。</td></tr>`;
-            } else {
-                otherHeldData.forEach((item, idx) => {
-                    const extCapDisplay = item.extCap > 0 ? item.extCap.toLocaleString('zh-TW', {minimumFractionDigits: 2}) : '-';
-                    
-                    let rowClass = "hover:bg-slate-50 transition-colors";
-                    let warningIcon = "";
-                    
-                    if (item.extCap > 0 && item.extCap < 100) {
-                        rowClass = "bg-red-50 hover:bg-red-100 transition-colors text-red-900";
-                        warningIcon = `<i data-lucide="alert-triangle" class="inline w-4 h-4 text-red-500 mr-1 relative -top-[1px]"></i>`;
-                    } else if (item.extCap >= 100 && item.extCap < 200) {
-                        rowClass = "bg-amber-50 hover:bg-amber-100 transition-colors text-amber-900";
-                        warningIcon = `<i data-lucide="alert-circle" class="inline w-4 h-4 text-amber-500 mr-1 relative -top-[1px]"></i>`;
-                    }
-
-                    otherHeldHTML += `
-                        <tr class="${rowClass}">
-                            <td class="px-6 py-3 text-slate-500 border-b border-slate-100">${idx + 1}</td>
-                            <td class="px-6 py-3 font-medium border-b border-slate-100">${item.ticker}</td>
-                            <td class="px-6 py-3 border-b border-slate-100">${warningIcon}${item.name}</td>
-                            <td class="px-6 py-3 border-b border-slate-100">${item.shares.toLocaleString('zh-TW')}</td>
-                            <td class="px-6 py-3 border-b border-slate-100">${formatCurrency(item.cost)}</td>
-                            <td class="px-6 py-3 font-bold ${item.extCap < 200 ? '' : 'text-indigo-600 bg-indigo-50/50'} border-b border-slate-100">${extCapDisplay}</td>
-                        </tr>
-                    `;
-                });
-            }
-            document.getElementById('otherHeldComparisonBody').innerHTML = otherHeldHTML;
-
             // 3. 尋找潛力標的 (代碼A結尾、名稱"主動"開頭、市值>180、未持有)
             const targetThreshold = 180;
-            const potentialTargets = [];
+            compPotentialData = [];
 
             Object.keys(globalMarketData).forEach(ticker => {
                 const info = globalMarketData[ticker];
@@ -936,7 +912,7 @@
                     });
                     
                     if (!isHeld) {
-                        potentialTargets.push({
+                        compPotentialData.push({
                             ticker: ticker,
                             name: info.name,
                             cap: info.cap
@@ -945,25 +921,172 @@
                 }
             });
 
-            // 由大至小排序
-            potentialTargets.sort((a, b) => b.cap - a.cap);
+            // 執行預設排序並渲染 (確保初始載入時有資料)
+            handleCompSort('held', sortCompHeld.col, true);
+            handleCompSort('other', sortCompOther.col, true);
+            handleCompSort('potential', sortCompPotential.col, true);
+        }
 
-            let targetsHTML = '';
-            if (potentialTargets.length === 0) {
-                targetsHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-slate-400">目前沒有符合條件的潛在標的。</td></tr>`;
+        // 市值比對表格的排序邏輯
+        function handleCompSort(table, col, keepDirection = false) {
+            let state, data, renderFn;
+            if (table === 'held') { state = sortCompHeld; data = compHeldData; renderFn = renderCompHeldTable; }
+            else if (table === 'other') { state = sortCompOther; data = compOtherData; renderFn = renderCompOtherTable; }
+            else if (table === 'potential') { state = sortCompPotential; data = compPotentialData; renderFn = renderCompPotentialTable; }
+
+            if (!keepDirection) {
+                if (state.col === col) {
+                    state.asc = !state.asc;
+                } else {
+                    state.col = col;
+                    state.asc = true; // 預設點擊新欄位時遞增
+                }
+            }
+
+            data.sort((a, b) => {
+                let valA = a[col];
+                let valB = b[col];
+                
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    return state.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+                return state.asc ? (valA - valB) : (valB - valA);
+            });
+
+            renderFn();
+        }
+
+        // 共用的表格表頭渲染函式
+        function renderCompHeaders(theadId, cols, state, tableKey) {
+            const thead = document.getElementById(theadId);
+            let thHTML = '<tr>';
+            cols.forEach(col => {
+                if (!col.sortable) {
+                    thHTML += `<th class="px-6 py-3 border-b border-slate-200 ${col.color || ''}">${col.label}</th>`;
+                } else {
+                    let icon = '<i data-lucide="arrow-up-down" class="inline w-3 h-3 text-slate-300 ml-1"></i>';
+                    if (state.col === col.id) {
+                        icon = state.asc ? '<i data-lucide="arrow-up" class="inline w-3 h-3 text-indigo-500 ml-1"></i>' : '<i data-lucide="arrow-down" class="inline w-3 h-3 text-indigo-500 ml-1"></i>';
+                    }
+                    thHTML += `<th class="px-6 py-3 border-b border-slate-200 hover:text-indigo-600 hover:bg-slate-200 cursor-pointer transition-colors select-none ${col.color || ''}" onclick="handleCompSort('${tableKey}', '${col.id}')">
+                                <div class="flex items-center">${col.label} ${icon}</div>
+                               </th>`;
+                }
+            });
+            thHTML += '</tr>';
+            thead.innerHTML = thHTML;
+        }
+
+        // 渲染: 主動 ETF 持有明細
+        function renderCompHeldTable() {
+            const cols = [
+                { id: 'index', label: '排名', sortable: false },
+                { id: 'ticker', label: '證券代號', sortable: true },
+                { id: 'name', label: '標的名稱', sortable: true },
+                { id: 'shares', label: '庫存數量', sortable: true },
+                { id: 'cost', label: '庫存成本', sortable: true },
+                { id: 'extCap', label: '最新總市值(億)', sortable: true, color: 'bg-indigo-50 text-indigo-700' }
+            ];
+            renderCompHeaders('heldComparisonHead', cols, sortCompHeld, 'held');
+
+            let html = '';
+            compHeldData.forEach((item, idx) => {
+                const extCapDisplay = item.extCap > 0 ? item.extCap.toLocaleString('zh-TW', {minimumFractionDigits: 2}) : '-';
+                
+                let rowClass = "hover:bg-slate-50 transition-colors";
+                let warningIcon = "";
+                if (item.extCap > 0 && item.extCap < 100) {
+                    rowClass = "bg-red-50 hover:bg-red-100 transition-colors text-red-900";
+                    warningIcon = `<i data-lucide="alert-triangle" class="inline w-4 h-4 text-red-500 mr-1 relative -top-[1px]"></i>`;
+                } else if (item.extCap >= 100 && item.extCap < 200) {
+                    rowClass = "bg-amber-50 hover:bg-amber-100 transition-colors text-amber-900";
+                    warningIcon = `<i data-lucide="alert-circle" class="inline w-4 h-4 text-amber-500 mr-1 relative -top-[1px]"></i>`;
+                }
+
+                html += `
+                    <tr class="${rowClass}">
+                        <td class="px-6 py-3 text-slate-500 border-b border-slate-100">${idx + 1}</td>
+                        <td class="px-6 py-3 font-medium border-b border-slate-100">${item.ticker}</td>
+                        <td class="px-6 py-3 border-b border-slate-100">${warningIcon}${item.name}</td>
+                        <td class="px-6 py-3 border-b border-slate-100">${item.shares.toLocaleString('zh-TW')}</td>
+                        <td class="px-6 py-3 border-b border-slate-100">${formatCurrency(item.cost)}</td>
+                        <td class="px-6 py-3 font-bold ${item.extCap < 200 ? '' : 'text-indigo-600 bg-indigo-50/50'} border-b border-slate-100">${extCapDisplay}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('heldComparisonBody').innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // 渲染: 其他類型 ETF 持有明細
+        function renderCompOtherTable() {
+            const cols = [
+                { id: 'index', label: '排名', sortable: false },
+                { id: 'ticker', label: '證券代號', sortable: true },
+                { id: 'name', label: '標的名稱', sortable: true },
+                { id: 'shares', label: '庫存數量', sortable: true },
+                { id: 'cost', label: '庫存成本', sortable: true },
+                { id: 'extCap', label: '最新總市值(億)', sortable: true, color: 'bg-indigo-50 text-indigo-700' }
+            ];
+            renderCompHeaders('otherHeldComparisonHead', cols, sortCompOther, 'other');
+
+            let html = '';
+            if (compOtherData.length === 0) {
+                html = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-400">您的庫存中沒有找到符合排行榜的其他 ETF。</td></tr>`;
             } else {
-                potentialTargets.forEach(item => {
-                    targetsHTML += `
-                        <tr class="hover:bg-amber-50/50">
-                            <td class="px-6 py-3 font-medium text-slate-700">${item.ticker}</td>
-                            <td class="px-6 py-3 text-slate-700">${item.name}</td>
-                            <td class="px-6 py-3 font-bold text-amber-600">${item.cap.toLocaleString('zh-TW', {minimumFractionDigits: 2})}</td>
+                compOtherData.forEach((item, idx) => {
+                    const extCapDisplay = item.extCap > 0 ? item.extCap.toLocaleString('zh-TW', {minimumFractionDigits: 2}) : '-';
+                    
+                    let rowClass = "hover:bg-slate-50 transition-colors";
+                    let warningIcon = "";
+                    if (item.extCap > 0 && item.extCap < 100) {
+                        rowClass = "bg-red-50 hover:bg-red-100 transition-colors text-red-900";
+                        warningIcon = `<i data-lucide="alert-triangle" class="inline w-4 h-4 text-red-500 mr-1 relative -top-[1px]"></i>`;
+                    } else if (item.extCap >= 100 && item.extCap < 200) {
+                        rowClass = "bg-amber-50 hover:bg-amber-100 transition-colors text-amber-900";
+                        warningIcon = `<i data-lucide="alert-circle" class="inline w-4 h-4 text-amber-500 mr-1 relative -top-[1px]"></i>`;
+                    }
+
+                    html += `
+                        <tr class="${rowClass}">
+                            <td class="px-6 py-3 text-slate-500 border-b border-slate-100">${idx + 1}</td>
+                            <td class="px-6 py-3 font-medium border-b border-slate-100">${item.ticker}</td>
+                            <td class="px-6 py-3 border-b border-slate-100">${warningIcon}${item.name}</td>
+                            <td class="px-6 py-3 border-b border-slate-100">${item.shares.toLocaleString('zh-TW')}</td>
+                            <td class="px-6 py-3 border-b border-slate-100">${formatCurrency(item.cost)}</td>
+                            <td class="px-6 py-3 font-bold ${item.extCap < 200 ? '' : 'text-indigo-600 bg-indigo-50/50'} border-b border-slate-100">${extCapDisplay}</td>
                         </tr>
                     `;
                 });
             }
-            document.getElementById('potentialTargetsBody').innerHTML = targetsHTML;
+            document.getElementById('otherHeldComparisonBody').innerHTML = html;
+            lucide.createIcons();
+        }
 
+        // 渲染: 潛在標的
+        function renderCompPotentialTable() {
+            const cols = [
+                { id: 'ticker', label: '證券代號', sortable: true },
+                { id: 'name', label: '標的名稱', sortable: true },
+                { id: 'cap', label: '最新總市值(億)', sortable: true, color: 'text-amber-700' }
+            ];
+            renderCompHeaders('potentialTargetsHead', cols, sortCompPotential, 'potential');
+
+            let html = '';
+            if (compPotentialData.length === 0) {
+                html = `<tr><td colspan="3" class="px-6 py-6 text-center text-slate-400">目前沒有符合條件的潛在標的。</td></tr>`;
+            } else {
+                compPotentialData.forEach(item => {
+                    html += `
+                        <tr class="hover:bg-amber-50/50">
+                            <td class="px-6 py-3 font-medium text-slate-700 border-b border-slate-100">${item.ticker}</td>
+                            <td class="px-6 py-3 text-slate-700 border-b border-slate-100">${item.name}</td>
+                            <td class="px-6 py-3 font-bold text-amber-600 border-b border-slate-100">${item.cap.toLocaleString('zh-TW', {minimumFractionDigits: 2})}</td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('potentialTargetsBody').innerHTML = html;
             lucide.createIcons();
         }
 
