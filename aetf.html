@@ -196,7 +196,7 @@
                     <div class="p-6 border-b border-slate-100 bg-slate-50">
                         <h2 class="text-lg font-semibold text-slate-800">您持有的「其他類型」ETF 目前市值排名</h2>
                         <div class="text-xs text-slate-500 mt-2 flex flex-wrap items-center gap-4">
-                            <span>點擊表頭可切換排序。自動比對貼上資料列出您庫存中非主動式的 ETF。</span>
+                            <span>點擊表頭可切換排序。自動篩選您庫存中非主動式的 ETF (若未比對到市場市值，將顯示為 - )。</span>
                             <span class="flex items-center gap-1.5 font-medium text-amber-700 bg-amber-100/50 px-2 py-1 rounded">
                                 <span class="w-3 h-3 inline-block bg-amber-100 border border-amber-300 rounded-sm"></span> 低於 200 億 (觀察名單)
                             </span>
@@ -839,9 +839,9 @@
                 return;
             }
 
-            // 針對網頁貼上的文字使用 Regex 進行解析 (無懼格式與空白排版)
-            // 尋找: (00開頭代碼) + (名稱) + (上市/上櫃) + (市值數字)
-            const regex = /(00\d{2,3}[A-Za-z]?)\s*(.*?)\s*(上市|上櫃)\s*([\d,]+\.\d{2})/g;
+            // 修正 Regex 解析規則：放寬數字位數，支援 006208、009823 等 6 碼 ETF
+            // 尋找: (00開頭 + 2~4位數字 + 選擇性的英文字母) + (名稱) + (上市/上櫃) + (市值數字)
+            const regex = /(00[0-9]{2,4}[A-Za-z]?)\s*(.*?)\s*(上市|上櫃)\s*([\d,]+\.\d{2})/g;
             let match;
             globalMarketData = {};
 
@@ -883,16 +883,27 @@
             const activeTickers = new Set(appData.map(row => (row[colKeys.ticker] || '').replace(/[^0-9A-Za-z]/g, '')));
             compOtherData = [];
             
+            // 取得原始資料的欄位名稱，以便判斷股票類型
+            const rawHeaders = allHoldingsData.length > 0 ? Object.keys(allHoldingsData[0]) : [];
+            const typeCol = findColumn(rawHeaders, ['股票類型', '類型', '分類']) || '股票類型';
+
             allHoldingsData.forEach(row => {
-                const tickerStr = (row[colKeys.ticker] || '').replace(/[^0-9A-Za-z]/g, '');
-                // 條件：代碼有值、存在於貼上的 ETF 名單中、且不在主動式 ETF 名單中
-                if (tickerStr && globalMarketData[tickerStr] && !activeTickers.has(tickerStr)) {
+                const tickerStrRaw = (row[colKeys.ticker] || '').toString().trim();
+                const tickerStr = tickerStrRaw.replace(/[^0-9A-Za-z]/g, '');
+                const typeStr = (row[typeCol] || '').toString().toUpperCase();
+                
+                // 判斷是否為 ETF (代碼00開頭或類型包含ETF/高股息/市值型/債券)
+                const isETF = tickerStrRaw.startsWith('00') || typeStr.includes('ETF') || typeStr.includes('高股息') || typeStr.includes('市值型') || typeStr.includes('債');
+
+                // 條件改變：只要是ETF且非主動式，即使在排行榜(globalMarketData)沒找到，也要列出來！
+                if (tickerStr && isETF && !activeTickers.has(tickerStr)) {
+                    const marketInfo = globalMarketData[tickerStr] || { cap: 0, name: '' };
                     compOtherData.push({
                         ticker: row[colKeys.ticker],
-                        name: row[colKeys.name] || globalMarketData[tickerStr].name,
+                        name: row[colKeys.name] || marketInfo.name || '未知名稱',
                         shares: row[colKeys.shares] ? parseNumber(row[colKeys.shares]) : 0,
                         cost: row[colKeys.cost] ? parseNumber(row[colKeys.cost]) : 0,
-                        extCap: globalMarketData[tickerStr].cap
+                        extCap: marketInfo.cap
                     });
                 }
             });
