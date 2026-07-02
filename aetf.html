@@ -108,10 +108,17 @@
 
             <!-- 整體資產配置占比 (白色卡片區) -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-lg font-semibold text-slate-800 mb-4 border-b pb-2 flex items-center justify-between">
-                    <span>整體資產配置占比</span>
-                    <span class="text-sm font-normal text-slate-500">檢視各類型持股比重</span>
-                </h2>
+                <div class="flex items-center justify-between mb-4 border-b pb-2">
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                            <span>整體資產配置占比</span>
+                        </h2>
+                        <span class="text-sm font-normal text-slate-500">檢視各類型持股比重</span>
+                    </div>
+                    <button onclick="toggleAllocationView()" id="btnToggleView" class="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md border border-indigo-100 transition-colors">
+                        <i data-lucide="pie-chart" class="w-4 h-4"></i> 切換為純佔比視角
+                    </button>
+                </div>
                 <div id="allocationCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- 卡片動態生成於此 -->
                 </div>
@@ -251,6 +258,7 @@
         let myChart = null;
         let allocationData = []; // 整體資產配置的資料
         let globalMarketData = {}; // 存放解析後的市場資料
+        let isPercentView = false; // 控制資產配置顯示模式
         
         // 排序狀態 (主動式明細表)
         let sortCol = null;
@@ -403,23 +411,6 @@
                 // 移除股票類型欄位，不顯示在明細表
                 headers = parsed.headers.filter(h => h !== '股票類型');
 
-                // 偵測關鍵欄位
-                colKeys = {
-                    ticker: findColumn(headers, ['代號', '代碼']) || headers[0],
-                    name: findColumn(headers, ['名稱', '標的', '商品', 'ETF']) || headers[1],
-                    shares: findColumn(headers, ['合計股數', '股數', '張數', '庫存', '數量']), 
-                    cost: findColumn(headers, ['庫存成本', '總成本', '投入', '成本', '金額']), 
-                    value: findColumn(headers, ['市值', '現值', '總值']),
-                    pnl: findColumn(headers, ['損益', '獲利', '報酬額']),
-                    pnlPercent: findColumn(headers, ['報酬率', '%', '損益率'])
-                };
-
-                // 防呆：如果代碼和名稱抓到同一個欄位，強制錯開
-                if (colKeys.ticker === colKeys.name && headers.length > 1) {
-                    colKeys.ticker = headers[0];
-                    colKeys.name = headers[1];
-                }
-
                 // 在「現價」與「合計股數」中間插入「平均成本」標題
                 let insertIndex = headers.findIndex(h => h.includes('現價'));
                 if (insertIndex !== -1) {
@@ -526,50 +517,92 @@
             renderTable();
         }
 
+        // 切換資產配置卡片視角
+        function toggleAllocationView() {
+            isPercentView = !isPercentView;
+            const btn = document.getElementById('btnToggleView');
+            if (isPercentView) {
+                btn.innerHTML = '<i data-lucide="dollar-sign" class="w-4 h-4"></i> 切換為金額視角';
+            } else {
+                btn.innerHTML = '<i data-lucide="pie-chart" class="w-4 h-4"></i> 切換為純佔比視角';
+            }
+            lucide.createIcons();
+            renderAllocationCards();
+        }
+
         function renderAllocationCards() {
             const container = document.getElementById('allocationCards');
             let html = '';
 
-            // 依據類型指定固定顏色，參考圖片風格
+            // 依據類型指定固定顏色，包含文字、邊框、圖示、以及圖表底色用的類別
             const getCardColor = (type, index) => {
-                if (type.includes('高股息')) return { border: 'border-red-500', dot: 'bg-red-500', bar: 'bg-red-500' };
-                if (type.includes('市值')) return { border: 'border-blue-500', dot: 'bg-blue-500', bar: 'bg-blue-500' };
-                if (type.includes('金融')) return { border: 'border-amber-500', dot: 'bg-amber-500', bar: 'bg-amber-500' };
-                if (type.includes('債券')) return { border: 'border-emerald-500', dot: 'bg-emerald-500', bar: 'bg-emerald-500' };
-                if (type.includes('主動')) return { border: 'border-pink-500', dot: 'bg-pink-500', bar: 'bg-pink-500' };
-                if (type.includes('傳產')) return { border: 'border-purple-500', dot: 'bg-purple-500', bar: 'bg-purple-500' };
+                if (type.includes('高股息')) return { border: 'border-red-500', dot: 'bg-red-500', bar: 'bg-red-500', text: 'text-red-600', ring: 'text-red-500' };
+                if (type.includes('市值')) return { border: 'border-blue-500', dot: 'bg-blue-500', bar: 'bg-blue-500', text: 'text-blue-600', ring: 'text-blue-500' };
+                if (type.includes('金融')) return { border: 'border-amber-500', dot: 'bg-amber-500', bar: 'bg-amber-500', text: 'text-amber-600', ring: 'text-amber-500' };
+                if (type.includes('債券')) return { border: 'border-emerald-500', dot: 'bg-emerald-500', bar: 'bg-emerald-500', text: 'text-emerald-600', ring: 'text-emerald-500' };
+                if (type.includes('主動')) return { border: 'border-pink-500', dot: 'bg-pink-500', bar: 'bg-pink-500', text: 'text-pink-600', ring: 'text-pink-500' };
+                if (type.includes('傳產')) return { border: 'border-purple-500', dot: 'bg-purple-500', bar: 'bg-purple-500', text: 'text-purple-600', ring: 'text-purple-500' };
                 
-                // 其他類型使用備用顏色
                 const fallbacks = [
-                    { border: 'border-cyan-500', dot: 'bg-cyan-500', bar: 'bg-cyan-500' },
-                    { border: 'border-orange-500', dot: 'bg-orange-500', bar: 'bg-orange-500' },
-                    { border: 'border-lime-500', dot: 'bg-lime-500', bar: 'bg-lime-500' },
-                    { border: 'border-indigo-500', dot: 'bg-indigo-500', bar: 'bg-indigo-500' }
+                    { border: 'border-cyan-500', dot: 'bg-cyan-500', bar: 'bg-cyan-500', text: 'text-cyan-600', ring: 'text-cyan-500' },
+                    { border: 'border-orange-500', dot: 'bg-orange-500', bar: 'bg-orange-500', text: 'text-orange-600', ring: 'text-orange-500' },
+                    { border: 'border-lime-500', dot: 'bg-lime-500', bar: 'bg-lime-500', text: 'text-lime-600', ring: 'text-lime-500' },
+                    { border: 'border-indigo-500', dot: 'bg-indigo-500', bar: 'bg-indigo-500', text: 'text-indigo-600', ring: 'text-indigo-500' }
                 ];
                 return fallbacks[index % fallbacks.length];
             };
 
             allocationData.forEach((item, index) => {
                 const color = getCardColor(item.type, index);
-                const displayValue = formatCurrency(item.value).replace('NT$', '$'); // 轉換為 $ 符號以符合原圖風格
                 
-                html += `
-                    <div class="bg-white rounded-xl p-5 relative overflow-hidden shadow-sm border border-slate-100 flex flex-col border-l-4 ${color.border}">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="w-3 h-3 rounded-full ${color.dot}"></div>
-                            <span class="text-slate-500 text-sm font-medium">${item.type}</span>
-                        </div>
-                        <div class="text-2xl font-bold text-slate-800 mb-4">
-                            ${displayValue}
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden inset-shadow-sm">
-                                <div class="h-full ${color.bar} rounded-full" style="width: ${item.percent}%"></div>
+                if (isPercentView) {
+                    // 純佔比視角 (環形圖表風格)
+                    // 計算 svg 的 stroke-dasharray (圓周長 2 * PI * r, r=16 -> ~100.5)
+                    const circumference = 2 * Math.PI * 16;
+                    const strokeDashoffset = circumference - (item.percent / 100) * circumference;
+
+                    html += `
+                        <div class="bg-white rounded-xl p-5 relative overflow-hidden shadow-sm border border-slate-100 flex flex-row items-center border-l-4 ${color.border}">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="w-2.5 h-2.5 rounded-full ${color.dot}"></div>
+                                    <span class="text-slate-500 text-sm font-medium">${item.type}</span>
+                                </div>
+                                <div class="text-3xl font-extrabold ${color.text}">
+                                    ${item.percent.toFixed(1)}%
+                                </div>
                             </div>
-                            <span class="text-slate-500 text-sm font-semibold w-12 text-right">${item.percent.toFixed(1)}%</span>
+                            <div class="relative w-14 h-14">
+                                <!-- 背景圓環 -->
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="16" fill="none" class="stroke-slate-100" stroke-width="4"></circle>
+                                    <!-- 進度圓環 -->
+                                    <circle cx="18" cy="18" r="16" fill="none" class="stroke-current ${color.ring}" stroke-width="4" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round"></circle>
+                                </svg>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // 原本的金額與佔比視角
+                    const displayValue = formatCurrency(item.value).replace('NT$', '$');
+                    html += `
+                        <div class="bg-white rounded-xl p-5 relative overflow-hidden shadow-sm border border-slate-100 flex flex-col border-l-4 ${color.border}">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-3 h-3 rounded-full ${color.dot}"></div>
+                                <span class="text-slate-500 text-sm font-medium">${item.type}</span>
+                            </div>
+                            <div class="text-2xl font-bold text-slate-800 mb-4">
+                                ${displayValue}
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden inset-shadow-sm">
+                                    <div class="h-full ${color.bar} rounded-full" style="width: ${item.percent}%"></div>
+                                </div>
+                                <span class="text-slate-500 text-sm font-semibold w-12 text-right">${item.percent.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    `;
+                }
             });
 
             container.innerHTML = html;
@@ -840,7 +873,6 @@
             }
 
             // 修正 Regex 解析規則：放寬數字位數，支援 006208、009823 等 6 碼 ETF
-            // 尋找: (00開頭 + 2~4位數字 + 選擇性的英文字母) + (名稱) + (上市/上櫃) + (市值數字)
             const regex = /(00[0-9]{2,4}[A-Za-z]?)\s*(.*?)\s*(上市|上櫃)\s*([\d,]+\.\d{2})/g;
             let match;
             globalMarketData = {};
@@ -895,7 +927,7 @@
                 // 判斷是否為 ETF (代碼00開頭或類型包含ETF/高股息/市值型/債券)
                 const isETF = tickerStrRaw.startsWith('00') || typeStr.includes('ETF') || typeStr.includes('高股息') || typeStr.includes('市值型') || typeStr.includes('債');
 
-                // 條件改變：只要是ETF且非主動式，即使在排行榜(globalMarketData)沒找到，也要列出來！
+                // 條件：只要是ETF且非主動式，即使在排行榜(globalMarketData)沒找到，也要列出來
                 if (tickerStr && isETF && !activeTickers.has(tickerStr)) {
                     const marketInfo = globalMarketData[tickerStr] || { cap: 0, name: '' };
                     compOtherData.push({
@@ -1043,7 +1075,7 @@
 
             let html = '';
             if (compOtherData.length === 0) {
-                html = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-400">您的庫存中沒有找到符合排行榜的其他 ETF。</td></tr>`;
+                html = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-400">您的庫存中沒有找到符合條件的其他 ETF。</td></tr>`;
             } else {
                 compOtherData.forEach((item, idx) => {
                     const extCapDisplay = item.extCap > 0 ? item.extCap.toLocaleString('zh-TW', {minimumFractionDigits: 2}) : '-';
