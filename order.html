@@ -30,9 +30,9 @@
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-3 text-3xl shadow-sm border border-emerald-200">
                 🍵
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-emerald-950 mb-2">11/11(三) 大茗下午茶 飲料訂購</h1>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-emerald-950 mb-2">大茗下午茶 飲料訂購</h1>
             <p class="text-gray-600 mb-4 text-sm sm:text-base">
-                請填寫您的全名並選擇飲品，飲料將於 <strong class="text-emerald-800 font-bold">11/11(三) 下午</strong> 為大家送達！<br>
+                請填寫您的全名並選擇配送日期與飲品，飲料將於 <strong class="text-emerald-800 font-bold">11/11(三) 或 11/12(四) 下午</strong> 為大家送達！<br>
                 <span class="text-emerald-700 font-medium text-xs sm:text-sm">（若點餐時間截止未填寫者，將由小助理隨機為您搭配唷~）</span>
             </p>
             
@@ -87,6 +87,29 @@
                         <input type="text" id="name" name="name" required placeholder="例如：林俊良"
                             class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-colors text-sm">
                         <p class="text-xs text-red-500 mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>請填寫完整真實姓名，方便發送餐點</p>
+                    </div>
+
+                    <!-- 配送日期選擇 (11/11 或 11/12) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            希望送達日期 (二擇一) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-emerald-50/60 transition-colors has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/80">
+                                <input type="radio" name="delivery_date" value="11/11 (三)" required class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
+                                <div class="ml-2.5">
+                                    <div class="font-bold text-gray-900 text-sm">11/11 (三)</div>
+                                    <div class="text-xs text-gray-500">週三下午送達</div>
+                                </div>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-emerald-50/60 transition-colors has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/80">
+                                <input type="radio" name="delivery_date" value="11/12 (四)" required class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
+                                <div class="ml-2.5">
+                                    <div class="font-bold text-gray-900 text-sm">11/12 (四)</div>
+                                    <div class="text-xs text-gray-500">週四下午送達</div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <!-- 飲料選擇 (固定糖冰) -->
@@ -255,6 +278,7 @@
                         
                         <div class="bg-white/80 p-3 rounded-lg border border-emerald-200 text-sm mb-3 space-y-1">
                             <p><span class="font-semibold text-emerald-800">登記姓名：</span> <span id="resultName" class="text-gray-800 font-bold"></span></p>
+                            <p><span class="font-semibold text-emerald-800">送達日期：</span> <span id="resultDate" class="text-gray-800 font-bold text-emerald-700"></span></p>
                             <p><span class="font-semibold text-emerald-800">選擇飲料：</span> <span id="resultDrink" class="text-gray-800"></span></p>
                             <p><span class="font-semibold text-emerald-800">冰量配方：</span> <span id="resultIce" class="text-gray-800"></span></p>
                             <p><span class="font-semibold text-emerald-800">糖量配方：</span> <span id="resultSugar" class="text-gray-800"></span></p>
@@ -337,9 +361,18 @@
             errorMsg.classList.add('hidden');
 
             const nameValue = document.getElementById('name').value.trim();
-            const selectedRadio = document.querySelector('input[name="drink_option"]:checked');
+            const selectedDateRadio = document.querySelector('input[name="delivery_date"]:checked');
+            const selectedDrinkRadio = document.querySelector('input[name="drink_option"]:checked');
 
-            if (!selectedRadio) {
+            if (!selectedDateRadio) {
+                alert("請選擇希望送達日期（11/11 或 11/12）！");
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                loadingIcon.classList.add('hidden');
+                return;
+            }
+
+            if (!selectedDrinkRadio) {
                 alert("請先選擇一款飲料！");
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
@@ -347,9 +380,10 @@
                 return;
             }
 
-            const selectedDrink = selectedRadio.value;
-            const selectedIce = selectedRadio.getAttribute('data-ice');
-            const selectedSugar = selectedRadio.getAttribute('data-sugar');
+            const selectedDate = selectedDateRadio.value;
+            const selectedDrink = selectedDrinkRadio.value;
+            const selectedIce = selectedDrinkRadio.getAttribute('data-ice');
+            const selectedSugar = selectedDrinkRadio.getAttribute('data-sugar');
 
             // 建立隱藏表單動態傳送到 iframe，完全避開預覽視窗與手機瀏覽器對跨域 fetch 的安全阻擋
             const hiddenForm = document.createElement('form');
@@ -361,13 +395,13 @@
             // 完全對齊後台 Apps Script 欄位順序：
             // A: 時間 (GAS 自動補上)
             // B: name (姓名)
-            // C: date (配送日期 11/11 (三))
+            // C: date (配送日期：11/11 (三) 或 11/12 (四))
             // D: drink (飲料)
             // E: ice (冰量)
             // F: sugar (糖量)
             const dataParams = {
                 name: nameValue,
-                date: '11/11 (三)',
+                date: selectedDate,
                 drink: selectedDrink,
                 ice: selectedIce,
                 sugar: selectedSugar
@@ -390,6 +424,7 @@
                 isSubmitting = false;
 
                 document.getElementById('resultName').textContent = nameValue;
+                document.getElementById('resultDate').textContent = selectedDate;
                 document.getElementById('resultDrink').textContent = selectedDrink;
                 document.getElementById('resultIce').textContent = selectedIce;
                 document.getElementById('resultSugar').textContent = selectedSugar;
@@ -437,9 +472,16 @@
         });
 
         // =========================================================================
-        // Google Sheet 即時排行榜同步
+        // Google Sheet 即時排行榜同步 (大茗 202611下午茶 專屬串流)
         // =========================================================================
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5JLQGfuMJtXbYzQ2NmPxEgE3GFZ_6cvS4Y0m6TFHJbaYfVDeDX9srWpY6JHi9l4JJz285qNSbXx4q/pub?gid=0&single=true&output=csv';
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetGid = urlParams.get('gid') || '202611';
+        
+        // 預設讀取發佈之 CSV，支援 gid=202611 或自訂 gid
+        let csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT5JLQGfuMJtXbYzQ2NmPxEgE3GFZ_6cvS4Y0m6TFHJbaYfVDeDX9srWpY6JHi9l4JJz285qNSbXx4q/pub?output=csv';
+        if (targetGid && targetGid !== '0') {
+            csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vT5JLQGfuMJtXbYzQ2NmPxEgE3GFZ_6cvS4Y0m6TFHJbaYfVDeDX9srWpY6JHi9l4JJz285qNSbXx4q/pub?gid=${targetGid}&single=true&output=csv`;
+        }
         
         function parseCsvLine(text) {
             let ret = [], col = '', inQuote = false;
