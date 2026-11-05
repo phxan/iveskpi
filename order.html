@@ -79,7 +79,7 @@
             <div class="p-5 sm:p-7" id="formWrapper">
                 <form id="orderForm" class="space-y-5">
                     
-                    <!-- 姓名填寫 (範例改為 王大大) -->
+                    <!-- 姓名填寫 -->
                     <div>
                         <label for="name" class="block text-sm font-semibold text-gray-700 mb-1.5">
                             您的全名 <span class="text-red-500">*</span>
@@ -463,21 +463,42 @@
                 const combos = {};
                 const drinkCounts = {};
                 
+                // 本次大茗下午茶有效品項清單 (嚴格白名單過濾，排除舊有飲等歷史品項)
+                const validDrinks = [
+                    '芒果青',
+                    '酪梨奶蓋紅玉',
+                    '蘋果玉露青',
+                    '珈琲粉粿蕎麥奶',
+                    '仙草嫩奶',
+                    '翡翠綠茶',
+                    '玉露青茶'
+                ];
+
                 for(let i = 1; i < lines.length; i++) {
                     if(!lines[i].trim()) continue;
                     const cols = parseCsvLine(lines[i]);
                     
-                    if(cols.length >= 4) {
-                        // 第 4 欄 (索引 3) 為飲料名稱，第 5 欄為冰量，第 6 欄為糖量
-                        let drink = cols[3];
-                        let ice = cols[4] || "";
-                        let sugar = cols[5] || "";
-                        
+                    let drink = "";
+                    let ice = "";
+                    let sugar = "";
+
+                    // 動態掃描該列欄位，尋找符合本次大茗 7 款品項者
+                    for(let c = 0; c < cols.length; c++) {
+                        const val = cols[c].trim();
+                        if(validDrinks.includes(val)) {
+                            drink = val;
+                            if(cols[c+1]) ice = cols[c+1].trim();
+                            if(cols[c+2]) sugar = cols[c+2].trim();
+                            break;
+                        }
+                    }
+
+                    // 僅統計屬於本次大茗的飲品
+                    if(drink && validDrinks.includes(drink)) {
                         let combo = drink;
                         if (ice || sugar) {
                             combo += ` (${ice}${ice && sugar ? ', ' : ''}${sugar})`;
                         }
-                        
                         combos[combo] = (combos[combo] || 0) + 1;
                         drinkCounts[drink] = (drinkCounts[drink] || 0) + 1;
                     }
