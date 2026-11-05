@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>公司招待下午茶 飲料訂單 (大茗本位製茶堂)</title>
+    <title>賀 因10月CATV業績達標 公司招待下午茶 🎉 飲料訂單 (大茗本位製茶堂)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -30,7 +30,23 @@
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-3 text-3xl shadow-sm border border-emerald-200">
                 🍵
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-emerald-950 mb-2">公司招待下午茶 飲料訂單 (大茗本位製茶堂)</h1>
+            <div class="mb-4">
+                <!-- 最醒目的關鍵榮譽大標題 (凸顯業績達標) -->
+                <div class="text-xs sm:text-sm font-bold text-amber-600 tracking-widest uppercase mb-1">
+                    🏆 榮譽時刻・全員喝采
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-amber-600 tracking-tight mb-2 drop-shadow-sm flex items-center justify-center flex-wrap gap-1.5">
+                    <span>賀！10月 CATV 業績達標</span>
+                    <span>🎉</span>
+                </h1>
+                
+                <!-- 次要說明的招待與訂單標籤 (縮小字級、襯托主因) -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-100/80 text-emerald-900 rounded-full border border-emerald-200 text-xs sm:text-sm font-medium shadow-sm">
+                    <span class="font-bold">公司招待下午茶</span>
+                    <span class="text-emerald-400">•</span>
+                    <span>飲料訂單 (大茗本位製茶堂)</span>
+                </div>
+            </div>
             <p class="text-gray-600 mb-4 text-sm sm:text-base">
                 請填寫您的全名並選擇配送日期與飲品，飲料將於 <strong class="text-emerald-800 font-bold">11/11(三) 或 11/12(四) 下午</strong> 為大家送達！<br>
                 <span class="text-emerald-700 font-medium text-xs sm:text-sm">（若點餐時間截止未填寫者，將由小助理隨機為您搭配唷~）</span>
@@ -552,7 +568,9 @@
                 
                 if(sortedCombos.length > 0) {
                     popularList.innerHTML = '';
-                    sortedCombos.slice(0, 3).forEach((item, index) => {
+                    // 顯示所有有人選的品項 (若超過5種則顯示前5，少於等於5則全部顯示)
+                    const displayCount = Math.min(sortedCombos.length, 5);
+                    sortedCombos.slice(0, displayCount).forEach((item, index) => {
                         const li = document.createElement('li');
                         li.className = 'flex justify-between items-center bg-white/70 px-3 py-2 rounded-lg shadow-sm border border-emerald-100';
                         li.innerHTML = `<span><span class="font-bold text-emerald-800 mr-2">Top ${index + 1}</span> ${item[0]}</span> <span class="bg-emerald-200 text-emerald-900 text-xs px-2 py-0.5 rounded-full font-bold">${item[1]} 人</span>`;
