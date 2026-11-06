@@ -31,10 +31,10 @@
                 <i class="fa-solid fa-robot"></i>
             </div>
             <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-                AI 工具使用狀況與申請需求調查
+                AI 工具使用狀況與申請需求調查 <span class="text-blue-600 block sm:inline text-xl sm:text-2xl font-bold">【客服部專用】</span>
             </h1>
             <p class="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
-                為兼顧業務效率、創新應用與資通安全，並依資安中心公告規範，由各單位幹部先行調查同仁使用現況，以利後續統一辦理特殊權限申請。
+                為兼顧業務效率、創新應用與資通安全，並依資安中心公告規範，由客服部幹部先行調查同仁使用現況，以利後續統一辦理特殊權限申請。
             </p>
             
             <!-- 公告重點摘要與時程提醒 -->
@@ -165,13 +165,17 @@
                         </div>
                     </div>
 
-                    <!-- 所屬部門 / 單位 -->
+                    <!-- 所屬部門 / 單位 (已鎖定客服部) -->
                     <div>
-                        <label for="dept" class="block text-sm font-bold text-slate-700 mb-1.5">
-                            所屬部門 / 申請單位 <span class="text-rose-500">*</span>
+                        <label for="dept" class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                            <span>所屬部門 / 申請單位 <span class="text-rose-500">*</span></span>
+                            <span class="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <i class="fa-solid fa-lock text-[10px]"></i> 專屬客服部
+                            </span>
                         </label>
-                        <input type="text" id="dept" name="dept" required placeholder="例如：維運技術部"
-                            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
+                        <input type="text" id="dept" name="dept" value="客服部" readonly
+                            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed outline-none text-sm select-none shadow-inner">
+                        <p class="text-[11px] text-slate-500 mt-1"><i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>本問卷專供客服部同仁填寫，單位已自動設定並鎖定。</p>
                     </div>
 
                     <div class="border-t border-slate-200 pt-5"></div>
@@ -322,7 +326,7 @@
                                 class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-xs sm:text-sm leading-relaxed"></textarea>
                             
                             <p class="text-xs text-slate-500 mt-1.5">
-                                📌 <strong>範例參考：</strong>技術問題查詢、錯誤訊息分析、維運文件撰寫，以提升故障排除及作業效率。使用過程不輸入個資、公司機密、帳密、金鑰、憑證、完整設定檔；AI 產出內容均由同仁人工確認及測試後使用，不直接操作正式系統或設備。
+                                📌 <strong>範例參考：</strong>客戶常見問題諮詢回覆參考、服務話術潤飾、客服知識庫與作業文件整理，以提升服務品質及作業效率。使用過程絕不輸入客戶個人資料（如姓名、電話、身分證字號、地址等）、公司機密、帳密金鑰；AI 產出內容均由客服同仁人工確認後使用，不由 AI 自動直接回覆客戶或操作正式系統。
                             </p>
                         </div>
                     </div>
@@ -445,7 +449,7 @@
 
         // 點擊帶入範例說明
         fillExampleBtn.addEventListener('click', () => {
-            reasonInput.value = '技術問題查詢、錯誤訊息分析、維運文件撰寫，以提升故障排除及作業效率。使用過程不輸入個資、公司機密、帳密、金鑰、憑證、完整設定檔；AI 產出內容均由維運人員人工確認及測試後使用，不由 AI 直接操作正式系統或設備。';
+            reasonInput.value = '客戶常見問題諮詢回覆參考、服務話術潤飾、客服知識庫與作業文件整理，以提升服務品質及作業效率。使用過程絕不輸入客戶個人資料（如姓名、電話、身分證字號、地址等）、公司機密、帳密金鑰；AI 產出內容均由客服同仁人工確認後使用，不由 AI 自動直接回覆客戶或操作正式系統。';
         });
 
         let isSubmitting = false;
