@@ -3,227 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TBC AI 工具使用狀況與申請需求調查表</title>
+    <title>TBC 客服部 AI 工具使用需求快速調查</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         .fade-in {
-            animation: fadeIn 0.4s ease-in-out;
+            animation: fadeIn 0.3s ease-in-out;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-8px); }
+            from { opacity: 0; transform: translateY(-6px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        .transition-all-custom {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-800 antialiased selection:bg-blue-100 selection:text-blue-900">
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 antialiased selection:bg-blue-100 selection:text-blue-900 pb-16">
 
-    <div class="max-w-2xl mx-auto pt-8 pb-20 px-4 sm:px-6">
+    <div class="max-w-lg mx-auto pt-6 px-4">
         
         <!-- 表頭主題區塊 -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 text-white mb-4 text-3xl shadow-lg shadow-blue-500/30">
-                <i class="fa-solid fa-robot"></i>
+        <div class="text-center mb-5">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 text-white mb-3 text-2xl shadow-md shadow-blue-500/25">
+                <i class="fa-solid fa-headset"></i>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-                AI 工具使用狀況與申請需求調查 <span class="text-blue-600 block sm:inline text-xl sm:text-2xl font-bold">【客服部專用】</span>
+            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mb-1.5">
+                客服部 AI 工具使用現況快速調查
             </h1>
-            <p class="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
-                為兼顧業務效率、創新應用與資通安全，並依資安中心公告規範，由客服部幹部先行調查同仁使用現況，以利後續統一辦理特殊權限申請。
+            <p class="text-slate-600 text-xs sm:text-sm">
+                依資安規範進行使用意願快速普查，幹部後續將協助統一申請。
             </p>
-            
-            <!-- 公告重點摘要與時程提醒 -->
-            <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full font-semibold text-xs sm:text-sm border border-blue-200 shadow-sm">
-                <i class="fa-solid fa-shield-halved text-blue-600"></i>
-                <span>依公司資安規範辦理｜申請流程上線前使用現況調查</span>
-            </div>
 
             <!-- 手機填寫強制提醒 -->
-            <div class="mt-5 bg-amber-50 border border-amber-300 p-4 text-left shadow-sm rounded-xl fade-in">
+            <div class="mt-4 bg-amber-50 border border-amber-300 p-3.5 text-left shadow-sm rounded-xl fade-in">
                 <div class="flex items-start">
-                    <div class="flex-shrink-0 w-9 h-9 rounded-lg bg-amber-200 text-amber-800 flex items-center justify-center mr-3 mt-0.5 text-lg shadow-sm">
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-                    </div>
+                    <i class="fa-solid fa-mobile-screen-button text-amber-600 text-lg mt-0.5 mr-2.5 flex-shrink-0"></i>
                     <div>
-                        <h3 class="font-bold text-amber-900 text-sm sm:text-base flex items-center gap-1.5">
-                            <span>⚠️ 敬請務必使用手機 (4G/5G 行動網路) 填寫</span>
+                        <h3 class="font-bold text-amber-900 text-xs sm:text-sm">
+                            ⚠️ 敬請務必使用手機 (4G/5G 行動網路) 填寫
                         </h3>
-                        <p class="text-xs sm:text-sm text-amber-800 mt-1 leading-relaxed">
-                            因公司內部網路（公司電腦及公司內網 Wi-Fi）受資安政策控管，<strong>會阻擋外部 Google 服務</strong>。若使用公司電腦或內網送出，將導致<strong>資料無法記錄至資料庫</strong>。請各位幹部同仁務必使用<strong>手機透過 4G/5G 行動網路</strong>開啟此網頁進行填寫！
+                        <p class="text-[11px] sm:text-xs text-amber-800 mt-0.5 leading-relaxed">
+                            公司電腦及內網 Wi-Fi 有<strong>鎖定 Google 服務</strong>，若用電腦送出將會被阻擋導致<strong>無法記錄</strong>，請務必以個人手機填報。
                         </p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 區塊一：資安重要規範與禁止原則摘要 -->
-        <div class="bg-white rounded-2xl border border-amber-200 shadow-sm p-5 mb-6 fade-in bg-gradient-to-r from-amber-50/60 to-white">
-            <div class="flex items-start">
-                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center mr-3 mt-0.5">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-                <div class="text-xs sm:text-sm text-slate-700 space-y-1.5 leading-relaxed">
-                    <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                        資安合規提醒（公告禁止原則）
-                    </h3>
-                    <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
-                        <li><strong>嚴禁機敏外洩：</strong>禁止將個資、營業秘密、帳號密碼、API Token、金鑰或既有原始碼輸入外部 AI。</li>
-                        <li><strong>帳號轉換規定：</strong>目前使用個人信箱註冊者，經核准後須於下一帳單週期前轉換為公司核准帳號。</li>
-                        <li><strong>結果人工確認：</strong>AI 產出內容不得未經人工確認即直接對外發布、營運決策或於正式環境部署。</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- 區塊二：正規申請資訊欄位對照參考 (摺疊展示，讓同仁理解後續完整申請所需資訊) -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
-            <button type="button" id="toggleRefBtn" class="w-full px-5 py-4 text-left flex justify-between items-center bg-slate-50 hover:bg-slate-100 transition-colors">
-                <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-clipboard-list text-blue-600 text-base"></i>
-                    <span class="font-bold text-slate-800 text-sm sm:text-base">📋 參考資訊：公司正式「特殊權限申請單」欄位對照</span>
-                    <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">參考用</span>
-                </div>
-                <i id="toggleRefIcon" class="fa-solid fa-chevron-down text-slate-400 text-sm transition-transform duration-200"></i>
-            </button>
-            
-            <div id="refContainer" class="hidden p-5 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-600">
-                <p class="mb-3 text-slate-700 leading-normal">
-                    💡 <strong>填表說明：</strong>本問卷僅先收集<span class="text-blue-600 font-bold">「個人姓名、工號、目前使用的工具、方案與業務說明」</span>以利幹部造冊彙整。下方為未來正式公文送簽時所需之完整欄位對照（包含電腦名稱、IP、網域等），提供填表人先行知悉：
-                </p>
-                <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
-                                <th class="p-2 font-semibold">欄位名稱</th>
-                                <th class="p-2 font-semibold">收集階段</th>
-                                <th class="p-2 font-semibold">填寫內容範例</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr>
-                                <td class="p-2 font-medium text-slate-900">申請人 / 員工編號</td>
-                                <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">本次問卷收集</span></td>
-                                <td class="p-2 text-slate-500">林*良 / 1592****</td>
-                            </tr>
-                            <tr>
-                                <td class="p-2 font-medium text-slate-900">AI 工具名稱 / 方案</td>
-                                <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">本次問卷收集</span></td>
-                                <td class="p-2 text-slate-500">ChatGPT、Claude / 免費、個人付費</td>
-                            </tr>
-                            <tr>
-                                <td class="p-2 font-medium text-slate-900">是否涉及個資/機敏資訊</td>
-                                <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">本次問卷收集</span></td>
-                                <td class="p-2 text-slate-500">無（標準）/ 營業秘密 / 原始碼</td>
-                            </tr>
-                            <tr>
-                                <td class="p-2 font-medium text-slate-900">合理性與必要性說明</td>
-                                <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">本次問卷收集</span></td>
-                                <td class="p-2 text-slate-500">技術查詢、錯誤日誌分析、輔助撰寫文件等</td>
-                            </tr>
-                            <tr class="bg-amber-50/40">
-                                <td class="p-2 font-medium text-slate-900">電腦名稱 / IP 位置</td>
-                                <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-medium">後續正式申請補填</span></td>
-                                <td class="p-2 text-slate-500">T-ISC-NB-2873 / 172.21.11.20 (本次問卷免填)</td>
-                            </tr>
-                            <tr class="bg-amber-50/40">
-                                <td class="p-2 font-medium text-slate-900">新增 / 異動 / 停用</td>
-                                <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-medium">後續正式申請補填</span></td>
-                                <td class="p-2 text-slate-500">幹部統整時統一設定為「新增」(本次問卷免填)</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 區塊三：調查表單本體 -->
-        <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden fade-in">
-            <div class="p-6 sm:p-8">
-                <form id="aiSurveyForm" class="space-y-6">
+        <!-- 調查表單卡片 (極簡手機優化版) -->
+        <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200 overflow-hidden">
+            <div class="p-5 sm:p-6">
+                <form id="aiSurveyForm" class="space-y-5">
                     
-                    <!-- 基本資料：姓名與工號 -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label for="userName" class="block text-sm font-bold text-slate-700 mb-1.5">
-                                填單人姓名 <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="userName" name="userName" required placeholder="例如：林*良"
-                                class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
-                        </div>
+                    <!-- 隱藏的部門欄位（固定客服部） -->
+                    <input type="hidden" id="dept" name="dept" value="客服部">
 
-                        <div>
-                            <label for="empId" class="block text-sm font-bold text-slate-700 mb-1.5">
-                                員工編號 (工號) <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="empId" name="empId" required placeholder="例如：1592****"
-                                class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
-                        </div>
-                    </div>
-
-                    <!-- 所屬部門 / 單位 (已鎖定客服部) -->
+                    <!-- 1. 姓名 -->
                     <div>
-                        <label for="dept" class="block text-sm font-bold text-slate-700 mb-1.5 flex items-center justify-between">
-                            <span>所屬部門 / 申請單位 <span class="text-rose-500">*</span></span>
-                            <span class="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <i class="fa-solid fa-lock text-[10px]"></i> 專屬客服部
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label for="userName" class="block text-sm font-bold text-slate-800">
+                                您的姓名 <span class="text-rose-500">*</span>
+                            </label>
+                            <span class="text-xs bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded-md border border-blue-100">
+                                客服部專用
                             </span>
-                        </label>
-                        <input type="text" id="dept" name="dept" value="客服部" readonly
-                            class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed outline-none text-sm select-none shadow-inner">
-                        <p class="text-[11px] text-slate-500 mt-1"><i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>本問卷專供客服部同仁填寫，單位已自動設定並鎖定。</p>
+                        </div>
+                        <input type="text" id="userName" name="userName" required placeholder="例如：林*良"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition">
                     </div>
 
-                    <div class="border-t border-slate-200 pt-5"></div>
-
-                    <!-- 核心判斷：目前是否有使用 AI 工具 -->
+                    <!-- 2. 有無使用 AI 工具 -->
                     <div>
                         <label class="block text-sm font-bold text-slate-800 mb-2">
-                            目前業務中是否正在使用或預計申請 AI 工具？ <span class="text-rose-500">*</span>
+                            是否有使用或欲申請 AI 工具？ <span class="text-rose-500">*</span>
                         </label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <label class="flex items-center p-3.5 border rounded-xl cursor-pointer hover:bg-blue-50/60 transition has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 has-[:checked]:ring-1 has-[:checked]:ring-blue-500">
-                                <input type="radio" name="has_ai" value="有使用" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                                <div class="ml-3">
-                                    <div class="text-sm font-bold text-slate-900">有使用 / 預計申請</div>
-                                    <div class="text-xs text-slate-500">需繼續填寫下方工具與說明</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-blue-50/60 transition has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50 has-[:checked]:ring-1 has-[:checked]:ring-blue-500">
+                                <input type="radio" name="has_ai" value="有使用" checked class="w-4 h-4 text-blue-600">
+                                <div class="ml-2.5">
+                                    <div class="text-sm font-bold text-slate-900">有使用</div>
+                                    <div class="text-[11px] text-slate-500">需申請</div>
                                 </div>
                             </label>
                             
-                            <label class="flex items-center p-3.5 border rounded-xl cursor-pointer hover:bg-slate-100 transition has-[:checked]:border-slate-500 has-[:checked]:bg-slate-100 has-[:checked]:ring-1 has-[:checked]:ring-slate-400">
-                                <input type="radio" name="has_ai" value="無使用" class="w-4 h-4 text-slate-600 focus:ring-slate-500">
-                                <div class="ml-3">
-                                    <div class="text-sm font-bold text-slate-900">無使用（無需申請）</div>
-                                    <div class="text-xs text-slate-500">免填其他項目，可直接送出</div>
+                            <label class="flex items-center p-3 border rounded-xl cursor-pointer hover:bg-slate-100 transition has-[:checked]:border-slate-500 has-[:checked]:bg-slate-100 has-[:checked]:ring-1 has-[:checked]:ring-slate-400">
+                                <input type="radio" name="has_ai" value="無使用" class="w-4 h-4 text-slate-600">
+                                <div class="ml-2.5">
+                                    <div class="text-sm font-bold text-slate-900">無使用</div>
+                                    <div class="text-[11px] text-slate-500">無需申請</div>
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <!-- 無使用提示區塊 (預設隱藏) -->
-                    <div id="noUsageNotice" class="hidden p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-sm">
-                        <div class="flex items-center gap-2 font-bold text-slate-800 mb-1">
-                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                            無需申請確認
-                        </div>
-                        <p class="text-xs text-slate-600">
-                            您目前無使用 AI 工具之需求。點擊下方「確認送出」後，系統將完成「零申報」登記備查。
-                        </p>
+                    <!-- 無使用提示區塊 (切換無使用時顯示) -->
+                    <div id="noUsageNotice" class="hidden p-3.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs leading-relaxed">
+                        <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>
+                        您目前無使用 AI 工具。點擊下方「<strong>確認送出</strong>」即完成零申報備查，免填其他項目。
                     </div>
 
-                    <!-- AI 詳細資訊收集區塊 (選「有使用」時顯示) -->
-                    <div id="aiDetailSection" class="space-y-6 fade-in">
+                    <!-- 有使用才需填寫的精簡區塊 -->
+                    <div id="aiDetailSection" class="space-y-4 pt-1 border-t border-slate-100 fade-in">
                         
-                        <!-- AI 工具名稱 -->
+                        <!-- 3. 使用的 AI 工具 -->
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">
-                                使用之 AI 工具名稱 (可複選) <span class="text-rose-500">*</span>
+                            <label class="block text-sm font-bold text-slate-800 mb-2">
+                                使用的 AI 工具 (可複選) <span class="text-rose-500">*</span>
                             </label>
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <div class="grid grid-cols-2 gap-2">
                                 <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
                                     <input type="checkbox" name="tool_choice" value="ChatGPT" class="w-4 h-4 text-blue-600 rounded">
                                     <span class="ml-2 text-xs font-semibold text-slate-800">ChatGPT</span>
@@ -242,162 +129,129 @@
                                 </label>
                             </div>
                             
-                            <!-- 其它工具補充 -->
-                            <div class="mt-2.5 flex items-center gap-2">
-                                <span class="text-xs font-medium text-slate-500 whitespace-nowrap">其它工具：</span>
-                                <input type="text" id="toolOther" placeholder="若使用其他工具請在此輸入（如 Midjourney、Cursor...）"
-                                    class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-xs text-slate-500 whitespace-nowrap">其它：</span>
+                                <input type="text" id="toolOther" placeholder="若使用其他工具請輸入名稱"
+                                    class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-1 focus:ring-blue-500 outline-none">
                             </div>
                         </div>
 
-                        <!-- 使用方案類型 -->
+                        <!-- 4. 使用方案類型 -->
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">
+                            <label class="block text-sm font-bold text-slate-800 mb-2">
                                 使用方案類型 <span class="text-rose-500">*</span>
                             </label>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            <div class="grid grid-cols-2 gap-2">
                                 <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
                                     <input type="radio" name="plan_type" value="免費" checked class="w-4 h-4 text-blue-600">
-                                    <span class="ml-2 text-xs font-semibold text-slate-800">免費方案</span>
-                                </label>
-                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
-                                    <input type="radio" name="plan_type" value="試用" class="w-4 h-4 text-blue-600">
-                                    <span class="ml-2 text-xs font-semibold text-slate-800">試用方案</span>
+                                    <span class="ml-2 text-xs font-semibold text-slate-800">免費版</span>
                                 </label>
                                 <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
                                     <input type="radio" name="plan_type" value="個人付費" class="w-4 h-4 text-blue-600">
                                     <span class="ml-2 text-xs font-semibold text-slate-800">個人付費 (自費)</span>
                                 </label>
                                 <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
-                                    <input type="radio" name="plan_type" value="企業方案" class="w-4 h-4 text-blue-600">
-                                    <span class="ml-2 text-xs font-semibold text-slate-800">企業/團隊方案</span>
+                                    <input type="radio" name="plan_type" value="試用" class="w-4 h-4 text-blue-600">
+                                    <span class="ml-2 text-xs font-semibold text-slate-800">試用方案</span>
                                 </label>
-                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 col-span-2 sm:col-span-1">
-                                    <input type="radio" name="plan_type" value="其它" class="w-4 h-4 text-blue-600">
-                                    <span class="ml-2 text-xs font-semibold text-slate-800">其它</span>
+                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500">
+                                    <input type="radio" name="plan_type" value="企業/其它" class="w-4 h-4 text-blue-600">
+                                    <span class="ml-2 text-xs font-semibold text-slate-800">企業 / 其它</span>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- 是否涉及個資 / 機敏資訊 -->
+                        <!-- 5. 是否涉及個資 -->
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1.5">
-                                是否涉及個資／機敏資訊？ <span class="text-rose-500">*</span>
+                            <label class="block text-sm font-bold text-slate-800 mb-1">
+                                是否涉及客戶個資／機敏資訊？ <span class="text-rose-500">*</span>
                             </label>
-                            <p class="text-xs text-slate-500 mb-2.5">
-                                依公文規定，嚴禁將個資、營業秘密、帳號密碼或原始碼上傳外部 AI。若工作純屬資料整理與文字潤飾，請勾選「無」。
+                            <p class="text-[11px] text-slate-500 mb-2">
+                                依資安規範，嚴禁將客戶個資或帳密上傳至外部 AI。
                             </p>
                             <div class="space-y-2">
                                 <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-emerald-50/60 has-[:checked]:bg-emerald-50 has-[:checked]:border-emerald-500">
                                     <input type="radio" name="sensitive_data" value="無" checked class="w-4 h-4 text-emerald-600">
-                                    <span class="ml-2 text-xs font-bold text-emerald-800">【合規標準】無涉及任何個資或機敏資訊</span>
+                                    <div class="ml-2">
+                                        <div class="text-xs font-bold text-emerald-800">無（不涉及任何個資或機敏）</div>
+                                        <div class="text-[10px] text-emerald-600">純文字潤飾、話術參考、一般諮詢</div>
+                                    </div>
                                 </label>
-                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-rose-50 has-[:checked]:border-rose-400">
-                                    <input type="radio" name="sensitive_data" value="個人資料" class="w-4 h-4 text-rose-600">
-                                    <span class="ml-2 text-xs text-slate-800">包含個人資料（需專案專簽）</span>
-                                </label>
-                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-rose-50 has-[:checked]:border-rose-400">
-                                    <input type="radio" name="sensitive_data" value="公司機密 / 營業秘密" class="w-4 h-4 text-rose-600">
-                                    <span class="ml-2 text-xs text-slate-800">公司機密 / 營業秘密（原則禁止）</span>
-                                </label>
-                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-rose-50 has-[:checked]:border-rose-400">
-                                    <input type="radio" name="sensitive_data" value="公司既有原始碼" class="w-4 h-4 text-rose-600">
-                                    <span class="ml-2 text-xs text-slate-800">公司既有原始碼（需資安中心特殊審查）</span>
-                                </label>
-                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-amber-50 has-[:checked]:border-amber-400">
-                                    <input type="radio" name="sensitive_data" value="使用 API / 外掛 / 連接器" class="w-4 h-4 text-amber-600">
-                                    <span class="ml-2 text-xs text-slate-800">使用 API / 外掛 / 連接器</span>
+                                <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-rose-50/60 has-[:checked]:bg-rose-50 has-[:checked]:border-rose-400">
+                                    <input type="radio" name="sensitive_data" value="涉及個資/機敏" class="w-4 h-4 text-rose-600">
+                                    <div class="ml-2">
+                                        <div class="text-xs font-semibold text-rose-800">有涉及個資／機敏資訊</div>
+                                        <div class="text-[10px] text-rose-600">需資安中心專簽專案審查</div>
+                                    </div>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- 說明(必填)：請詳述說明工作內容之合理性、必要性 -->
-                        <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <label for="reason" class="block text-sm font-bold text-slate-700">
-                                    說明 (必填)：詳述工作內容之合理性、必要性 <span class="text-rose-500">*</span>
-                                </label>
-                                <button type="button" id="fillExampleBtn" class="text-xs text-blue-600 hover:text-blue-800 font-semibold underline">
-                                    帶入公文範例
-                                </button>
-                            </div>
-                            <textarea id="reason" name="reason" rows="4" required
-                                placeholder="請敘述業務應用情境，例如：技術問題查詢、故障代碼分析、一般文案潤飾。並確認不輸入任何機密..."
-                                class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-xs sm:text-sm leading-relaxed"></textarea>
-                            
-                            <p class="text-xs text-slate-500 mt-1.5">
-                                📌 <strong>範例參考：</strong>客戶常見問題諮詢回覆參考、服務話術潤飾、客服知識庫與作業文件整理，以提升服務品質及作業效率。使用過程絕不輸入客戶個人資料（如姓名、電話、身分證字號、地址等）、公司機密、帳密金鑰；AI 產出內容均由客服同仁人工確認後使用，不由 AI 自動直接回覆客戶或操作正式系統。
-                            </p>
-                        </div>
                     </div>
 
                     <!-- 提交按鈕 -->
-                    <div class="pt-3">
+                    <div class="pt-2">
                         <button type="submit" id="submitBtn" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex justify-center items-center text-sm sm:text-base">
-                            <span id="btnText">確認送出調查</span>
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md shadow-blue-500/20 transition-all flex justify-center items-center text-sm sm:text-base">
+                            <span id="btnText">確認送出</span>
                             <i id="loadingIcon" class="fa-solid fa-spinner fa-spin ml-2 hidden"></i>
                         </button>
                     </div>
                 </form>
 
-                <!-- 隱藏的 IFrame 用於無刷新非同步跨域提交 -->
+                <!-- 隱藏 IFrame 避開 CORS 阻擋 -->
                 <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
-                <!-- 成功回傳提示 -->
-                <div id="successMsg" class="hidden mt-6 bg-emerald-50 border border-emerald-200 text-emerald-800 p-5 rounded-2xl fade-in">
+                <!-- 成功回傳提示卡片 -->
+                <div id="successMsg" class="hidden mt-5 bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl fade-in">
                     <div class="flex items-start">
-                        <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 mr-3 mt-0.5">
-                            <i class="fa-solid fa-circle-check text-xl"></i>
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 mr-2.5 mt-0.5">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
                         </div>
                         <div class="w-full">
-                            <h4 class="font-bold text-base text-emerald-900 mb-1">調查資料已成功送出！</h4>
-                            <p class="text-xs text-emerald-700 mb-3">
-                                系統已記錄您的使用狀態。後續將由單位幹部統一造冊處理。
+                            <h4 class="font-bold text-sm text-emerald-900 mb-0.5">已成功送出登記！</h4>
+                            <p class="text-[11px] text-emerald-700 mb-2.5">
+                                感謝您的填寫，幹部將統整資料協助後續申請。
                             </p>
 
-                            <div class="bg-white/80 p-3.5 rounded-xl border border-emerald-200 text-xs space-y-1.5 text-slate-700 mb-4">
-                                <p><strong class="text-slate-900">填表同仁：</strong> <span id="resName"></span> (<span id="resEmpId"></span>)</p>
-                                <p><strong class="text-slate-900">所屬部門：</strong> <span id="resDept"></span></p>
+                            <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-200 text-xs space-y-1 text-slate-700 mb-3">
+                                <p><strong class="text-slate-900">填表姓名：</strong> <span id="resName"></span> (客服部)</p>
                                 <p><strong class="text-slate-900">使用狀態：</strong> <span id="resStatus" class="font-bold"></span></p>
-                                <div id="resDetailWrapper" class="space-y-1.5 pt-1 border-t border-slate-100 mt-1">
-                                    <p><strong class="text-slate-900">申請工具：</strong> <span id="resTools"></span></p>
+                                <div id="resDetailWrapper" class="space-y-1 pt-1 border-t border-slate-100">
+                                    <p><strong class="text-slate-900">使用的工具：</strong> <span id="resTools"></span></p>
                                     <p><strong class="text-slate-900">方案類型：</strong> <span id="resPlan"></span></p>
-                                    <p><strong class="text-slate-900">機敏資訊：</strong> <span id="resSensitive"></span></p>
+                                    <p><strong class="text-slate-900">個資機敏：</strong> <span id="resSensitive"></span></p>
                                 </div>
                             </div>
 
                             <button id="resetFormBtn" type="button" class="text-xs text-blue-600 underline font-semibold hover:text-blue-800">
-                                若填寫有誤需要重填，請點此重新填寫
+                                點此重新填寫
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- 錯誤訊息提示 -->
-                <div id="errorMsg" class="hidden mt-6 bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-xl flex items-start fade-in">
-                    <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-1 mr-3"></i>
+                <div id="errorMsg" class="hidden mt-4 bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-lg flex items-start text-xs fade-in">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5 mr-2"></i>
                     <div>
-                        <h4 class="font-bold text-sm">連線錯誤</h4>
-                        <p class="text-xs text-rose-600 mt-0.5">無法將資料儲存至試算表，請檢查網路連線或稍後再試。</p>
+                        <h4 class="font-bold">連線異常</h4>
+                        <p class="text-rose-600">無法寫入試算表，請檢查手機是否已切換為 4G/5G 網路。</p>
                     </div>
                 </div>
 
             </div>
         </div>
 
-        <!-- 頁尾說明 -->
-        <div class="text-center mt-8 text-xs text-slate-400">
-            台灣寬頻通訊 TBC 內部管理使用 ｜ 資安中心管理規範先行調查
+        <!-- 頁尾備忘 -->
+        <div class="text-center mt-6 text-[11px] text-slate-400">
+            台灣寬頻通訊 TBC 客服部內部使用 ｜ AI 工具普查
         </div>
     </div>
 
     <!-- 腳本邏輯 -->
     <script>
-        // =========================================================================
-        // 【重要設定】Google Apps Script Web App URL
-        // 請將下方網址替換為您在 Google Sheet 部署完成的 Apps Script 網頁應用程式網址
-        // =========================================================================
+        // Google Apps Script Web App URL
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_YOUR_DEPLOYED_SCRIPT_ID/exec';
 
         const form = document.getElementById('aiSurveyForm');
@@ -407,49 +261,24 @@
         const successMsg = document.getElementById('successMsg');
         const errorMsg = document.getElementById('errorMsg');
         const resetFormBtn = document.getElementById('resetFormBtn');
-        const fillExampleBtn = document.getElementById('fillExampleBtn');
 
         const aiDetailSection = document.getElementById('aiDetailSection');
         const noUsageNotice = document.getElementById('noUsageNotice');
-        const reasonInput = document.getElementById('reason');
 
-        // 摺疊參考資訊面板
-        const toggleRefBtn = document.getElementById('toggleRefBtn');
-        const refContainer = document.getElementById('refContainer');
-        const toggleRefIcon = document.getElementById('toggleRefIcon');
-
-        toggleRefBtn.addEventListener('click', () => {
-            const isHidden = refContainer.classList.contains('hidden');
-            if (isHidden) {
-                refContainer.classList.remove('hidden');
-                toggleRefIcon.classList.add('rotate-180');
-            } else {
-                refContainer.classList.add('hidden');
-                toggleRefIcon.classList.remove('rotate-180');
-            }
-        });
-
-        // 動態切換：有使用 vs 無使用
+        // 切換：有使用 vs 無使用
         const hasAiRadios = document.querySelectorAll('input[name="has_ai"]');
         hasAiRadios.forEach(radio => {
             radio.addEventListener('change', () => {
                 if (radio.value === '無使用') {
                     aiDetailSection.classList.add('hidden');
                     noUsageNotice.classList.remove('hidden');
-                    reasonInput.removeAttribute('required');
-                    btnText.textContent = '確認送出（無使用登記）';
+                    btnText.textContent = '確認送出 (無使用登記)';
                 } else {
                     aiDetailSection.classList.remove('hidden');
                     noUsageNotice.classList.add('hidden');
-                    reasonInput.setAttribute('required', 'required');
-                    btnText.textContent = '確認送出調查';
+                    btnText.textContent = '確認送出';
                 }
             });
-        });
-
-        // 點擊帶入範例說明
-        fillExampleBtn.addEventListener('click', () => {
-            reasonInput.value = '客戶常見問題諮詢回覆參考、服務話術潤飾、客服知識庫與作業文件整理，以提升服務品質及作業效率。使用過程絕不輸入客戶個人資料（如姓名、電話、身分證字號、地址等）、公司機密、帳密金鑰；AI 產出內容均由客服同仁人工確認後使用，不由 AI 自動直接回覆客戶或操作正式系統。';
         });
 
         let isSubmitting = false;
@@ -458,17 +287,15 @@
             e.preventDefault();
 
             const name = document.getElementById('userName').value.trim();
-            const empId = document.getElementById('empId').value.trim();
-            const dept = document.getElementById('dept').value.trim();
+            const dept = '客服部';
             const hasAi = document.querySelector('input[name="has_ai"]:checked').value;
 
             let selectedTools = [];
             let planType = '無';
             let sensitiveData = '無';
-            let reasonText = '無使用AI工具';
+            let reasonText = '客服部業務輔助使用（幹部統一申請）';
 
             if (hasAi === '有使用') {
-                // 收集勾選之工具
                 const toolBoxes = document.querySelectorAll('input[name="tool_choice"]:checked');
                 toolBoxes.forEach(box => selectedTools.push(box.value));
                 const otherTool = document.getElementById('toolOther').value.trim();
@@ -477,28 +304,24 @@
                 }
 
                 if (selectedTools.length === 0) {
-                    alert('請至少勾選一項使用的 AI 工具，或於其它欄位輸入！');
+                    alert('請至少勾選一項使用的 AI 工具！');
                     return;
                 }
 
                 planType = document.querySelector('input[name="plan_type"]:checked')?.value || '免費';
                 sensitiveData = document.querySelector('input[name="sensitive_data"]:checked')?.value || '無';
-                reasonText = reasonInput.value.trim();
-
-                if (!reasonText) {
-                    alert('請填寫工作內容之合理性與必要性說明！');
-                    return;
-                }
+            } else {
+                reasonText = '無使用需求（無需申請）';
             }
 
-            // 按鈕載入狀態
+            // 按鈕狀態
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
             loadingIcon.classList.remove('hidden');
             successMsg.classList.add('hidden');
             errorMsg.classList.add('hidden');
 
-            // 建立隱藏 form 提交到 iframe (與原下午茶表單相同機制，完美避開跨域問題)
+            // 建立隱藏 form 提交至 iframe
             const hiddenForm = document.createElement('form');
             hiddenForm.action = SCRIPT_URL;
             hiddenForm.method = 'POST';
@@ -508,7 +331,7 @@
             const payload = {
                 timestamp: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
                 name: name,
-                empId: empId,
+                empId: '-',
                 dept: dept,
                 hasAi: hasAi,
                 tools: hasAi === '有使用' ? selectedTools.join(', ') : '無',
@@ -535,8 +358,6 @@
                 isSubmitting = false;
 
                 document.getElementById('resName').textContent = name;
-                document.getElementById('resEmpId').textContent = empId;
-                document.getElementById('resDept').textContent = dept;
                 document.getElementById('resStatus').textContent = hasAi;
 
                 const detailWrapper = document.getElementById('resDetailWrapper');
@@ -558,7 +379,6 @@
                 loadingIcon.classList.add('hidden');
             };
 
-            // 備援超時：確保在任何受限環境下 3 秒內必定正常完成回饋展示
             setTimeout(() => {
                 if (isSubmitting) window.completeSubmission();
             }, 3000);
@@ -577,7 +397,6 @@
             }, 100);
         });
 
-        // 監聽 iframe 載入完成
         document.getElementById('hidden_iframe').addEventListener('load', function() {
             if (isSubmitting) window.completeSubmission();
         });
@@ -585,12 +404,9 @@
         // 重新填寫按鈕
         resetFormBtn.addEventListener('click', () => {
             form.reset();
-            // 重置預設狀態
             aiDetailSection.classList.remove('hidden');
             noUsageNotice.classList.add('hidden');
-            reasonInput.setAttribute('required', 'required');
-            btnText.textContent = '確認送出調查';
-
+            btnText.textContent = '確認送出';
             successMsg.classList.add('hidden');
             form.classList.remove('hidden');
             form.classList.add('fade-in');
