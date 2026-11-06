@@ -270,6 +270,25 @@
                                 <span class="text-xs px-2 py-1 bg-teal-100 text-teal-800 rounded-md font-medium shrink-0">純茶甘醇</span>
                             </label>
 
+                            <!-- 選項 8 -->
+                            <label class="flex items-center justify-between p-3.5 border rounded-xl cursor-pointer hover:bg-emerald-50/60 transition-colors has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/80">
+                                <div class="flex items-center">
+                                    <input type="radio" name="drink_option" value="烤糖蕎麥凍奶青" data-ice="微冰" data-sugar="微糖" required class="w-4 h-4 text-emerald-600 border-gray-300 focus:ring-emerald-500">
+                                    <div class="ml-3">
+                                        <div class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
+                                            <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded border border-emerald-200">大茗</span>
+                                            <span>烤糖蕎麥凍奶青</span>
+                                            <span>🍮</span>
+                                            <span class="fire-badge text-xs" data-drink="烤糖蕎麥凍奶青"></span>
+                                        </div>
+                                        <div class="text-xs text-emerald-700 font-medium mt-0.5">
+                                            固定配方：微糖、微冰（招牌人氣烤糖凍）
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-xs px-2 py-1 bg-amber-100 text-amber-900 rounded-md font-medium shrink-0">招牌必喝</span>
+                            </label>
+
                         </div>
                     </div>
 
@@ -529,7 +548,8 @@
                     '珈琲粉粿蕎麥奶',
                     '仙草嫩奶',
                     '翡翠綠茶',
-                    '玉露青茶'
+                    '玉露青茶',
+                    '烤糖蕎麥凍奶青'
                 ];
 
                 for(let i = 1; i < lines.length; i++) {
@@ -540,7 +560,7 @@
                     let ice = "";
                     let sugar = "";
 
-                    // 動態掃描該列欄位，尋找符合本次大茗 7 款品項者
+                    // 動態掃描該列欄位，尋找符合本次大茗 8 款品項者
                     for(let c = 0; c < cols.length; c++) {
                         const val = cols[c].trim();
                         if(validDrinks.includes(val)) {
